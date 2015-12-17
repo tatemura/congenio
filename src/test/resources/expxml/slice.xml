@@ -1,0 +1,186 @@
+<Tests>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <to>4</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>0 1 2 3</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>2</from>
+         <to>4</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>2 3</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice from="2" to="4">
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>2 3</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>4</from>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>4 5 6 7 8 9</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>4</from>
+         <to>4</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success></success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>4</from>
+         <to>10</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>4 5 6 7 8 9</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>4</from>
+         <to>11</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <exception>java.lang.IndexOutOfBoundsException</exception>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>8</from>
+         <to>6</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <exception>java.lang.IndexOutOfBoundsException</exception>
+  </Test>
+  <Test>
+    <comment>slice.from = slice.to = size is OK, returning an empty result.
+    This spec is also consistent with Java's List#subList, which throws
+    IndexOutOfBoundsException when
+    (fromIndex &lt; 0 || toIndex &gt; size || fromIndex &gt; toIndex).
+    </comment>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>10</from>
+         <to>10</to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success></success>
+  </Test>
+  <Test>
+    <comment>slice.from = slice.to = size is OK, returning an empty result.
+    This spec is also consistent with Java's List#subList, which throws
+    IndexOutOfBoundsException when
+    (fromIndex &lt; 0 || toIndex &gt; size || fromIndex &gt; toIndex).
+    </comment>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>10</from>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success></success>
+  </Test>
+  <Test>
+    <comment>slice.from > size is not OK: when slice.to is ommitted,
+    the default is slice.to = size. Thus it means from > to.
+    </comment>
+    <exp exp="concat(' ')">
+       <slice>
+         <from>12</from>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <exception>java.lang.IndexOutOfBoundsException</exception>
+  </Test>
+  <Test>
+    <comment>for a list funcation (split), "of" can be ommitted</comment>
+    <exp exp="concat(' ')">
+      <slice>
+        <from>2</from>
+        <to>6</to>
+        <split with=",">0,1,2,3,4,5,6,7,8,9</split>
+      </slice>
+    </exp>
+    <success>2 3 4 5</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+      <slice from="2" to="6">
+        <split with=",">0,1,2,3,4,5,6,7,8,9</split>
+      </slice>
+    </exp>
+    <success>2 3 4 5</success>
+  </Test>
+  <Test>
+   <comment>nested exp: slice.to is evaluated before slice
+   is evaluated</comment>
+    <exp exp="concat(' ')">
+       <slice>
+         <to exp="+"><v>3</v><v>1</v></to>
+         <of>
+          <v>0</v><v>1</v><v>2</v><v>3</v><v>4</v>
+          <v>5</v><v>6</v><v>7</v><v>8</v><v>9</v>
+         </of>
+       </slice>
+    </exp>
+    <success>0 1 2 3</success>
+  </Test>
+  
+</Tests>

@@ -1,0 +1,91 @@
+<Tests>
+  <Test>
+    <test>
+      <a><c>1</c><d>2</d></a>
+      <b ref="a"><b>0</b></b>
+    </test>
+    <success>
+      <a><c>1</c><d>2</d></a>
+      <b><c>1</c><d>2</d><b>0</b></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><c>1</c><d>2</d></a>
+      <b ref="a"><b>0</b><c>0</c></b>
+    </test>
+    <success>
+      <a><c>1</c><d>2</d></a>
+      <b><c>0</c><d>2</d><b>0</b></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a x="x" y="y"><c>1</c><d>2</d></a>
+      <b ref="a" x="x0"><b>0</b><c>0</c></b>
+    </test>
+    <success>
+      <a x="x" y="y"><c>1</c><d>2</d></a>
+      <b x="x0" y="y"><c>0</c><d>2</d><b>0</b></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><b>1</b><c>3</c></a>
+      <c>2</c>
+      <d ref="a"><c ref="c"/></d>
+    </test>
+    <success>
+      <a><b>1</b><c>3</c></a>
+      <c>2</c>
+      <d><b>1</b><c>2</c></d>
+    </success>
+  </Test>
+  <Test>
+    <comment>to resolve e@c, it will first check
+    its parent and then ancestors. If parent has a
+    reference, it is first checked before moving
+    on to ancestors.
+    </comment>
+    <test>
+      <a><b>1</b><c>3</c></a>
+      <c>2</c>
+      <d ref="a"><e ref="c"/></d>
+    </test>
+    <success>
+      <a><b>1</b><c>3</c></a>
+      <c>2</c>
+      <d><b>1</b><c>3</c><e>3</e></d>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <b><c><d><e>2</e></d></c></b>
+      <a><b><c ref="b/c/d"><d>1</d></c></b></a>
+    </test>
+    <success>
+      <b><c><d><e>2</e></d></c></b>
+      <a><b><c><e>2</e><d>1</d></c></b></a>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><b>1</b><c><d>2</d><e>3</e></c></a>
+      <f ref="a"><c><e>4</e></c></f>
+    </test>
+    <success>
+      <a><b>1</b><c><d>2</d><e>3</e></c></a>
+      <f><b>1</b><c><e>4</e></c></f>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><b>1</b><c><d>2</d><e>3</e></c></a>
+      <f ref="a"><c extends="."><e>4</e></c></f>
+    </test>
+    <success>
+      <a><b>1</b><c><d>2</d><e>3</e></c></a>
+      <f><b>1</b><c><d>2</d><e>4</e></c></f>
+    </success>
+  </Test>
+</Tests>

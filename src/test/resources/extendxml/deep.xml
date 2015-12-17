@@ -1,0 +1,58 @@
+<Tests>
+	<Test>
+	  <comment>without deep extension</comment>
+	  <repo>
+	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
+	  </repo>
+	  <test extends="a">
+	     <a><a><a>5</a></a></a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a><a><a>5</a></a></a>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test>
+	  <comment>with deep extension</comment>
+	  <repo>
+	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
+	  </repo>
+	  <test extends="a">
+	     <a extends="."><a><a>5</a></a></a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a><a><a>5</a></a><b>2</b></a>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test>
+	  <comment>with deeper extension</comment>
+	  <repo>
+	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
+	  </repo>
+	  <test extends="a">
+	     <a><a extends="."><a>5</a></a></a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a><a><a>5</a><b>4</b></a><b>2</b></a>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test>
+	  <comment>with duplicate deep extension</comment>
+	  <repo>
+	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
+	  </repo>
+	  <test extends="a">
+	     <a extends="."><a extends="."><a>5</a></a></a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a><a><a>5</a><b>4</b></a><b>2</b></a>
+	    <c>6</c>
+	  </success>
+	</Test>
+</Tests>

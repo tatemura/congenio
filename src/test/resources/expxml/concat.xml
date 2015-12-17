@@ -1,0 +1,28 @@
+<Tests>
+  <Test>
+    <exp exp="concat(' ')">
+      <a>This</a><b>is</b><c>a</c><d>test</d>
+    </exp>
+    <success>This is a test</success>
+  </Test>
+  <Test>
+    <exp exp="concat('.')">
+      <a>www</a><b>test</b><c>com</c>
+    </exp>
+    <success>www.test.com</success>
+  </Test>
+  <Test>
+    <exp exp="concat(' ')">
+      <a>This</a>text node here ignored<b>
+         is   </b><c>a</c><d>test</d>
+    </exp>
+    <success>This is a test</success>
+  </Test>
+  <Test>
+    <exp exp="concat('')">
+      <a>This</a>text node here ignored<b>
+         is   </b><c>a</c><d>test</d>
+    </exp>
+    <success>Thisisatest</success>
+  </Test>
+</Tests>

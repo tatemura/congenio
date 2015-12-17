@@ -1,0 +1,74 @@
+<Tests>
+  <Test>
+    <test>
+      <a>1</a>
+      <b ref="a"/>
+    </test>
+    <success>
+      <a>1</a>
+      <b>1</b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><c>1</c><d>2</d></a>
+      <b ref="a"/>
+    </test>
+    <success>
+      <a><c>1</c><d>2</d></a>
+      <b><c>1</c><d>2</d></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a>1</a>
+      <b><c ref="a"/></b>
+    </test>
+    <success>
+      <a>1</a>
+      <b><c>1</c></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a>1</a>
+      <b><a ref="a"/></b>
+    </test>
+    <success>
+      <a>1</a>
+      <b><a>1</a></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <b><a>1</a></b>
+      <c><b><a ref="b/a"/></b></c>
+    </test>
+    <success>
+      <b><a>1</a></b>
+      <c><b><a>1</a></b></c>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><d>1</d><e>2</e></a>
+      <b><c ref="a/d"/></b>
+      <c><c ref="a/e"/></c>
+    </test>
+    <success>
+      <a><d>1</d><e>2</e></a>
+      <b><c>1</c></b>
+      <c><c>2</c></c>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><b>1</b><c>3</c></a>
+      <c><a><c>2</c></a><d ref="a/b"/><e ref="a/c"/></c>
+    </test>
+    <success>
+      <a><b>1</b><c>3</c></a>
+      <c><a><c>2</c></a><d>1</d><e>2</e></c>
+    </success>
+  </Test>
+</Tests>

@@ -1,0 +1,46 @@
+<Tests>
+  <Test>
+    <test>
+      <foreach name="a"><v>1</v><v>2</v><v>3</v></foreach>
+      <b>4</b>
+    </test>
+    <success>
+      <test><a>1</a><b>4</b></test>
+      <test><a>2</a><b>4</b></test>
+      <test><a>3</a><b>4</b></test>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <foreach name="a" sep=",">1,2,3</foreach>
+      <b>4</b>
+    </test>
+    <success>
+      <test><a>1</a><b>4</b></test>
+      <test><a>2</a><b>4</b></test>
+      <test><a>3</a><b>4</b></test>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <foreach name="a" sep="," value="1,2,3"/>
+      <b>4</b>
+    </test>
+    <success>
+      <test><a>1</a><b>4</b></test>
+      <test><a>2</a><b>4</b></test>
+      <test><a>3</a><b>4</b></test>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <foreach name="a" range="1..3"/>
+      <b>4</b>
+    </test>
+    <success>
+      <test><a>1</a><b>4</b></test>
+      <test><a>2</a><b>4</b></test>
+      <test><a>3</a><b>4</b></test>
+    </success>
+  </Test>
+</Tests>

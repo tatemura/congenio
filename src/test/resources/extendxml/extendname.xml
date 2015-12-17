@@ -1,0 +1,59 @@
+<Tests>
+	<Test>
+	  <repo>
+	    <a>
+	      <property name="a">1</property>
+	      <property name="b">1</property>
+	    </a>
+	  </repo>
+	  <test extends="a">
+	      <property name="a">5</property>
+	      <property name="c">6</property>
+	  </test>
+	  <success>
+	      <property name="a">5</property>
+	      <property name="b">1</property>
+	      <property name="c">6</property>
+	  </success>
+	</Test>
+	<Test>
+	  <repo>
+	    <a>
+	      <property name="a">1</property>
+	      <property name="b">1</property>
+	    </a>
+	  </repo>
+	  <test extends="a">
+	      <property name="a">5</property>
+	      <property name="c">6</property>
+	      <test name="b">8</test>
+	      <b>4</b>
+	  </test>
+	  <success>
+	      <property name="a">5</property>
+	      <property name="b">1</property>
+	      <property name="c">6</property>
+	      <test name="b">8</test>
+	      <b>4</b>
+	  </success>
+	</Test>
+	<Test>
+	  <repo>
+	    <a>
+	      <property name="a" value="1"/>
+	      <property name="b" value="1"/>
+	      <property name="c">1</property>
+	    </a>
+	  </repo>
+	  <test extends="a">
+	      <property name="a">5</property>
+	      <property name="b" value="2"/>
+	      <property name="c" value="6"/>
+	  </test>
+	  <success>
+	      <property name="a">5</property>
+	      <property name="b" value="2"/>
+	      <property name="c" value="6"/>
+	  </success>
+	</Test>
+</Tests>

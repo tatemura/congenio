@@ -1,0 +1,14 @@
+<Tests>
+  <Test>
+    <test>
+      <foreach name="a" sep=",">1,2</foreach>
+      <foreach name="b" sep=" " value="1 2"/>
+    </test>
+    <success>
+      <test><a>1</a><b>1</b></test>
+      <test><a>1</a><b>2</b></test>
+      <test><a>2</a><b>1</b></test>
+      <test><a>2</a><b>2</b></test>
+    </success>
+  </Test>
+</Tests>

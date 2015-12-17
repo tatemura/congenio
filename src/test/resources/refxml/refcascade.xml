@@ -1,0 +1,62 @@
+<Tests>
+  <Test>
+    <test>
+      <a ref="c"/>
+      <b ref="a"/>
+      <c>1</c>
+    </test>
+    <success>
+      <a>1</a>
+      <b>1</b>
+      <c>1</c>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a><c ref="c"/><d>2</d></a>
+      <b ref="a"/>
+      <c>1</c>
+      <d ref="a/c"/>
+    </test>
+    <success>
+      <a><c>1</c><d>2</d></a>
+      <b><c>1</c><d>2</d></b>
+      <c>1</c>
+      <d>1</d>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a ref="b/d"/>
+      <b><c ref="a"/><d>1</d></b>
+    </test>
+    <success>
+      <a>1</a>
+      <b><c>1</c><d>1</d></b>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <a ref="c"/>
+      <b ref="a/d"/>
+      <c><d>1</d></c>
+    </test>
+    <success>
+      <a><d>1</d></a>
+      <b>1</b>
+      <c><d>1</d></c>
+    </success>
+  </Test>
+  <Test>
+    <test>
+      <b ref="a/d"/>
+      <a ref="c"/>
+      <c><d>1</d></c>
+    </test>
+    <success>
+      <b>1</b>
+      <a><d>1</d></a>
+      <c><d>1</d></c>
+    </success>
+  </Test>
+</Tests>
