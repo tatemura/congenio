@@ -27,6 +27,8 @@ public interface ValueBuilder {
 
 	ValueBuilder add(String name, ConfigValue value);
 
+	ValueBuilder add(String name, ConfigValue[] value);
+
 	ValueBuilder add(String name, ValueBuilder value);
 
 	String toXMLString();

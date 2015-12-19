@@ -116,6 +116,8 @@ public interface ConfigValue {
 
 	<T> T getObject(String name, Class<T> objectClass, T defaultObject);
 
+	<T> T toObject(Class<T> objectClass);
+
 	/**
 	 * Interprets the value as a map.
 	 * @return an empty value if there is no

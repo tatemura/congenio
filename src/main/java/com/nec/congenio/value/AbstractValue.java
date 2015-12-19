@@ -252,6 +252,10 @@ public abstract class AbstractValue implements ConfigValue {
 		}
 		return obj;
 	}
+	@Override
+	public <T> T toObject(Class<T> objectClass) {
+		return ValueUtil.toObject(this, objectClass);
+	}
 
 	@Override
 	public int intValue(int defaultValue) {

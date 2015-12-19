@@ -1,7 +1,7 @@
 Congenio: Configuration Generation Language
 ========================================================
 
-** This is a preview version (0.0.1) ** The current implementation
+** This is a preview version (0.0.2) ** The current implementation
 is just enough for our specific purposes. We will add some more missing
 pieces (with potentially incompatible changes) as well as documentation.
 We target Version 0.1.0 for public use.

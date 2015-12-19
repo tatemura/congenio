@@ -86,6 +86,7 @@ public abstract class PrimitiveValue implements ConfigValue {
 			return valueOf(value);
 		}
 	}
+	protected abstract Object rawValue();
 	@Override
 	public abstract String stringValue();
 
@@ -212,6 +213,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 	public <T> T getObject(String name, Class<T> objectClass, T defaultObject) {
 		return defaultObject;
 	}
+	@Override
+	public <T> T toObject(Class<T> objectClass) {
+		return ValueUtil.toObject(this, objectClass);
+	}
 
 	@Override
 	public Map<String, ConfigValue> toValueMap() {
@@ -268,6 +273,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 			this.value = value;
 		}
 		@Override
+		protected Object rawValue() {
+			return value;
+		}
+		@Override
 		public String stringValue() {
 			return value;
 		}
@@ -299,6 +308,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 		private final BigDecimal value;
 		public NumberValue(BigDecimal value) {
 			this.value = value;
+		}
+		@Override
+		protected Object rawValue() {
+			return value;
 		}
 		@Override
 		public String stringValue() {
@@ -338,6 +351,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 			this.value = value;
 		}
 		@Override
+		protected Object rawValue() {
+			return value;
+		}
+		@Override
 		public boolean booleanValue() {
 			return value;
 		}
@@ -367,6 +384,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 		}
 	}
 	public static class NullValue extends PrimitiveValue {
+		@Override
+		protected Object rawValue() {
+			return null;
+		}
 
 		@Override
 		public String stringValue() {

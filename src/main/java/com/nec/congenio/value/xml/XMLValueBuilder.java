@@ -85,6 +85,15 @@ public class XMLValueBuilder implements ValueBuilder {
 		return this;
 	}
 	@Override
+	public ValueBuilder add(String name, ConfigValue[] value) {
+		Element e = XMLValue.createElement(doc, name, Type.ARRAY);
+		for (ConfigValue v : value) {
+			e.appendChild(v.toXML(doc, "v"));
+		}
+		setElement(name, e);
+		return this;
+	}
+	@Override
 	public String toXMLString() {
 		return XML.toString(root);
 	}

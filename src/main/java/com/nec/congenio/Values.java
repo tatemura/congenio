@@ -16,7 +16,9 @@
 package com.nec.congenio;
 
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.net.URL;
+import java.util.Properties;
 
 import com.nec.congenio.value.PrimitiveValue;
 import com.nec.congenio.value.xml.XMLValueBuilder;
@@ -53,4 +55,34 @@ public final class Values {
 	public static boolean isNull(ConfigValue value) {
 		return (value == NONE || value instanceof PrimitiveValue.NullValue);
 	}
+
+	public static ConfigValue valueOf(int value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(long value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(double value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(String value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(BigDecimal value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(boolean value) {
+		return PrimitiveValue.valueOf(value);
+	}
+	public static ConfigValue valueOf(Properties value) {
+		ValueBuilder b = builder("properties");
+		for (Object key : value.keySet()) {
+			String name = key.toString();
+			b.add(name, value.getProperty(name));
+		}
+		return b.build();
+	}
+
+
+
 }
