@@ -86,6 +86,8 @@ public abstract class ConfigDescription {
     public static final String EXTEND_ONLY = "extend-only";
     public static final String PROP_MODE = "cdl.mode";
     public static final String PROP_OUT = "cdl.output";
+    public static final String PROP_IDX = "cdl.doc.idx";
+    public static final String PROP_PATH = "cdl.doc.path";
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.err.println("arg: filename");
@@ -96,23 +98,77 @@ public abstract class ConfigDescription {
         	OutputStreamWriter w = new OutputStreamWriter(System.out);
         	cdl.write(w, true);
         } else if ("json".equals(System.getProperty(PROP_OUT))) {
+        	Filter f = new Filter(System.getProperty(PROP_IDX));
+        	Projection p = new Projection(System.getProperty(PROP_PATH));
+        	int idx = 0;
         	for (ConfigValue conf : cdl.evaluate()) {
-        		JsonValue value = conf.toJson();
-        		System.out.println(JsonValueUtil.toString(value));
+        		if (f.output(idx)) {
+            		JsonValue value = p.project(conf).toJson();
+            		System.out.println(JsonValueUtil.toString(value));
+        		}
+        		idx++;
+        		if (idx > f.maxIndex()) {
+        			break;
+        		}
         	}        	
         } else {
+        	Filter f = new Filter(System.getProperty(PROP_IDX));
+        	Projection p = new Projection(System.getProperty(PROP_PATH));
         	OutputStreamWriter w = new OutputStreamWriter(System.out);
         	int idx = 0;
         	for (ConfigValue conf : cdl.evaluate()) {
-        		writeSeparator(idx, w);
-        		Values.write(conf, w, true);
+        		if (f.output(idx)) {
+            		writeSeparator(idx, w);
+            		Values.write(p.project(conf), w, true);
+        		}
         		idx++;
+        		if (idx > f.maxIndex()) {
+        			break;
+        		}
         	}
         }
     }
     static void writeSeparator(int idx, Writer w) throws IOException {
     	if (idx > 0) {
-        	w.write("<!-- -->\n");
+        	w.write("<!-- "
+        			+ idx + " -->\n");
+    	}
+    }
+    static class Projection {
+    	String[] path;
+    	Projection(String pattern) {
+    		if (pattern == null) {
+    			path = new String[0];
+    		} else {
+//    			path = pattern.split("\\.");
+    			path = pattern.split("/");
+    		}
+    	}
+    	public ConfigValue project(ConfigValue v) {
+    		for (String p : path) {
+    			v = v.getValue(p);
+    		}
+    		return v;
+    	}
+    }
+    static class Filter {
+    	int idx;
+    	Filter(String pattern) {
+    		if (pattern != null) {
+    			idx = Integer.parseInt(pattern);
+    		} else {
+    			idx = -1;
+    		}
+    	}
+    	public boolean output(int idx) {
+    		return this.idx < 0 || this.idx == idx;
+    	}
+    	public int maxIndex() {
+    		if (idx < 0) {
+    			return Integer.MAX_VALUE;
+    		} else {
+    			return idx;
+    		}
     	}
     }
 }

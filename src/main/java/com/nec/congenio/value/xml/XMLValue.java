@@ -172,7 +172,17 @@ public class XMLValue extends AbstractValue implements ConfigValue {
 	public static Type findType(Element e) {
 		String value = XML.getAttribute(Attrs.TYPE, e, null);
 		if (value != null) {
-			return Type.valueOf(value.trim().toUpperCase());
+			try {
+				return Type.valueOf(value.trim().toUpperCase());
+			} catch (IllegalArgumentException ex) {
+				/**
+				 * Note: type does not match with the Type.
+				 * ("type" may be used by other purpose)
+				 * TODO use namespace to distinguish "type" attribute?
+				 *
+				 */
+				return null;
+			}
 		}
 		return null;
 	}
