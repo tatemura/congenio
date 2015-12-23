@@ -2,6 +2,8 @@ package com.nec.congenio.value;
 
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
 import org.junit.Test;
 
 import com.nec.congenio.ConfigValue;
@@ -69,6 +71,18 @@ public class GetObjectTest {
 		TestGroup grp = value.toObject(TestGroup.class);
 		TestEntity[] entities = grp.getEntities();
 		assertEquals(vals.length, entities.length);
+	}
+
+	@Test
+	public void testCreateWithProperties() {
+		Properties prop = new Properties();
+		prop.setProperty("k1", "v1");
+		prop.setProperty("k2", "v2");
+		ConfigValue value = Values.builder("test")
+				.add("name", "name1")
+				.add("params", prop).build();
+		TestProp p = value.toObject(TestProp.class);
+		assertEquals(prop, p.getParams());
 	}
 	ConfigValue entity(long id) {
 		return Values.builder("test")
@@ -138,6 +152,22 @@ public class GetObjectTest {
 		}
 		public void setValue(double value) {
 			this.value = value;
+		}
+	}
+	public static final class TestProp {
+		private Properties params;
+		private String name;
+		public Properties getParams() {
+			return params;
+		}
+		public void setParams(Properties params) {
+			this.params = params;
+		}
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
 		}
 	}
 

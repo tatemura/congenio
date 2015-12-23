@@ -23,27 +23,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.ConfigValue;
+import com.nec.congenio.ValueBuilder;
+import com.nec.congenio.Values;
 
 public final class ValueUtil {
 
 	private ValueUtil() {
 	}
 
-	@Nullable
-	public static <T> T findObject(ConfigValue conf, String name, Class<T> cls) {
-		ConfigValue value = conf.findValue(name);
-		if (value != null) {
-			return toObject(value, cls);
-		}
-		return null;
-	}
-	public static <T> T getObject(ConfigValue conf, String name, Class<T> cls) {
-		return toObject(conf.getValue(name), cls);
-	}
 	public static <T> T toObject(ConfigValue value, Class<T> cls) {
 		if (cls.isArray()) {
 			return toObjArray(value, cls);
@@ -82,6 +71,9 @@ public final class ValueUtil {
 	}
 	@SuppressWarnings("unchecked")
 	private static <T> T toPrimitive(ConfigValue value, Class<T> cls) {
+		if (cls.equals(Properties.class)) {
+			return cls.cast(value.toProperties());
+		}
 		String strVal = value.stringValue();
 		if (strVal == null) {
 			return null;
@@ -104,37 +96,21 @@ public final class ValueUtil {
 		if (cls.equals(BigDecimal.class)) {
 			return cls.cast(new BigDecimal(strVal));
 		}
-		if (cls.equals(Properties.class)) {
-			return cls.cast(value.toProperties());
-		}
 		return null;
-	}
-	static <T> void setup(T obj, ConfigValue value, Class<T> cls) {
-		try {
-			for (Field f : cls.getDeclaredFields()) {
-				Method s = getSetter(cls, f.getName(), f.getType());
-				if (s != null) {
-					Object v = findObject(value, f.getName(), f.getType());
-					if (v != null) {
-						s.invoke(obj, v);
-					}
-				}
-			}
-		} catch (SecurityException e) {
-			throw new ConfigException("failed to create instance", e);
-		} catch (IllegalAccessException e) {
-			throw new ConfigException("failed to create instance", e);
-		} catch (IllegalArgumentException e) {
-			throw new ConfigException("failed to create instance", e);
-		} catch (InvocationTargetException e) {
-			throw new ConfigException("failed to create instance", e);
-		}
 	}
 
 	static <T> T toObjBySetters(ConfigValue value, Class<T> cls) {
 		try {
 			T obj = cls.newInstance();
-			setup(obj, value, cls);
+			for (Field f : cls.getDeclaredFields()) {
+				Method s = getSetter(cls, f.getName(), f.getType());
+				if (s != null) {
+					Object v = value.findObject(f.getName(), f.getType());
+					if (v != null) {
+						s.invoke(obj, v);
+					}
+				}
+			}
 			return obj;
 		} catch (InstantiationException e) {
 			throw new ConfigException("failed to create instance", e);
@@ -144,6 +120,8 @@ public final class ValueUtil {
 			throw new ConfigException("failed to create instance", e);
 		} catch (SecurityException e) {
 			throw new ConfigException("failed to create instance", e);
+		} catch (InvocationTargetException e) {
+			throw new ConfigException("failed to create instance", e);
 		}
 	}
 
@@ -152,6 +130,62 @@ public final class ValueUtil {
 				+ name.substring(1);
 		try {
 			return cls.getMethod(methodName, type);
+		} catch (NoSuchMethodException e) {
+			return null;
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	public static void setObject(ValueBuilder builder, String name, Object obj) {
+		if (obj instanceof Properties) {
+			builder.add(name, (Properties) obj);
+		} else if (obj instanceof String) {
+			builder.add(name, (String) obj);
+		} else if (obj instanceof Number) {
+			builder.add(name, (Number) obj);
+		} else if (obj instanceof Boolean) {
+			builder.add(name, ((Boolean) obj).booleanValue());
+		} else if (obj instanceof ConfigValue) {
+			builder.add(name, (ConfigValue) obj);
+		} else if (obj.getClass().isArray()) {
+			/**
+			 * TODO implement array to value
+			 */
+			throw new ConfigException("value from array not supported yet");
+		} else {
+			ValueBuilder b = Values.builder(name);
+			buildWithGetters(b, obj);
+			builder.add(name, b);
+		}
+	}
+	public static void buildWithGetters(ValueBuilder builder, Object obj) {
+		Class<?> cls = obj.getClass();
+		try {
+			for (Field  f : cls.getDeclaredFields()) {
+				Method g = getGetter(cls, f.getName(), f.getType());
+				if (g != null) {
+					setObject(builder, f.getName(), g.invoke(obj));
+				}
+			}
+		} catch (SecurityException e) {
+			throw new ConfigException("failed to create value from object", e);
+		} catch (IllegalAccessException e) {
+			throw new ConfigException("failed to create value from object", e);
+		} catch (IllegalArgumentException e) {
+			throw new ConfigException("failed to create value from object", e);
+		} catch (InvocationTargetException e) {
+			throw new ConfigException("failed to create value from object", e);
+		}
+	}
+	static Method getGetter(Class<?> cls, String name, Class<?> type) {
+		String methodName = "get" + name.substring(0, 1).toUpperCase()
+				+ name.substring(1);
+		try {
+			Method m = cls.getMethod(methodName);
+			if (type.isAssignableFrom(m.getReturnType())) {
+				return m;
+			}
+			return null;
 		} catch (NoSuchMethodException e) {
 			return null;
 		} catch (SecurityException e) {

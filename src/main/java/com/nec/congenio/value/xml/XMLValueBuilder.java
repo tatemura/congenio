@@ -15,6 +15,8 @@
  *******************************************************************************/
 package com.nec.congenio.value.xml;
 
+import java.util.Properties;
+
 import javax.json.JsonValue;
 
 import org.w3c.dom.Document;
@@ -25,6 +27,7 @@ import com.nec.congenio.Type;
 import com.nec.congenio.ValueBuilder;
 import com.nec.congenio.json.JsonValueUtil;
 import com.nec.congenio.json.JsonXML;
+import com.nec.congenio.value.ValueUtil;
 import com.nec.congenio.xml.XML;
 
 public class XMLValueBuilder implements ValueBuilder {
@@ -91,6 +94,22 @@ public class XMLValueBuilder implements ValueBuilder {
 			e.appendChild(v.toXML(doc, "v"));
 		}
 		setElement(name, e);
+		return this;
+	}
+	@Override
+	public ValueBuilder add(String name, Properties props) {
+		Element e = XMLValue.createElement(doc, name);
+		for (Object k : props.keySet()) {
+			Element p = XMLValue.createElement(doc,
+					k.toString(), props.getProperty(k.toString()));
+			e.appendChild(p);
+		}
+		setElement(name, e);
+		return this;
+	}
+	@Override
+	public ValueBuilder add(String name, Object value) {
+		ValueUtil.setObject(this, name, value);
 		return this;
 	}
 	@Override

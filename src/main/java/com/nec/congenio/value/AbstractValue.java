@@ -241,7 +241,11 @@ public abstract class AbstractValue implements ConfigValue {
 
 	@Override
 	public <T> T findObject(String name, Class<T> objectClass) {
-		return ValueUtil.findObject(this, name, objectClass);
+		ConfigValue value = findValue(name);
+		if (value != null) {
+			return ValueUtil.toObject(value, objectClass);
+		}
+		return null;
 	}
 
 	@Override

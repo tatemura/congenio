@@ -15,6 +15,8 @@
  *******************************************************************************/
 package com.nec.congenio;
 
+import java.util.Properties;
+
 
 public interface ValueBuilder {
 
@@ -30,6 +32,10 @@ public interface ValueBuilder {
 	ValueBuilder add(String name, ConfigValue[] value);
 
 	ValueBuilder add(String name, ValueBuilder value);
+
+	ValueBuilder add(String name, Properties props);
+
+	ValueBuilder add(String name, Object value);
 
 	String toXMLString();
 

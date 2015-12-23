@@ -82,7 +82,23 @@ public final class Values {
 		}
 		return b.build();
 	}
-
+	/**
+	 * Creates a ConfigValue from an object.
+	 * The object must be either: (1) primitive objects
+	 * (Number, String, Boolean), (2) Properties, or
+	 * (3) A simple Java bean with getters (of type (1), (2), or (3))
+	 * @param value
+	 */
+	public static ConfigValue create(Object value) {
+		if (value == null) {
+			return NONE;
+		}
+		/**
+		 * TODO refactor
+		 */
+		return XMLValueBuilder.create("t")
+				.add("t", value).build().getValue("t");
+	}
 
 
 }
