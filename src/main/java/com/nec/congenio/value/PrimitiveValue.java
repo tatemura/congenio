@@ -219,6 +219,10 @@ public abstract class PrimitiveValue implements ConfigValue {
 	}
 
 	@Override
+	public <T> Map<String, T> toObjectMap(Class<T> valueClass) {
+		return new HashMap<String, T>();
+	}
+	@Override
 	public Map<String, ConfigValue> toValueMap() {
 		return new HashMap<String, ConfigValue>();
 	}

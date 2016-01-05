@@ -20,13 +20,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+
+import javax.json.JsonValue;
 
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.ConfigValue;
 import com.nec.congenio.ValueBuilder;
 import com.nec.congenio.Values;
+import com.nec.congenio.annotation.MapOf;
 
 public final class ValueUtil {
 
@@ -38,6 +43,10 @@ public final class ValueUtil {
 			return toObjArray(value, cls);
 		}
 		T obj = toPrimitive(value, cls);
+		if (obj != null) {
+			return obj;
+		}
+		obj = toMapObj(value, cls);
 		if (obj != null) {
 			return obj;
 		}
@@ -69,6 +78,37 @@ public final class ValueUtil {
 		}
 		return (T) arry;
 	}
+	private static <T> T toMapObj(ConfigValue value, Class<T> cls) {
+		MapOf mo = cls.getAnnotation(MapOf.class);
+		if (mo != null) {
+			Map<String, ?> map = toMap(value, mo.value());
+			try {
+				return cls.getConstructor(Map.class).newInstance(map);
+			} catch (InstantiationException e) {
+				throw new ConfigException("failed to create instance", e);
+			} catch (IllegalAccessException e) {
+				throw new ConfigException("failed to create instance", e);
+			} catch (IllegalArgumentException e) {
+				throw new ConfigException("failed to create instance", e);
+			} catch (InvocationTargetException e) {
+				throw new ConfigException("failed to create instance", e);
+			} catch (NoSuchMethodException e) {
+				throw new ConfigException("failed to create instance", e);
+			} catch (SecurityException e) {
+				throw new ConfigException("failed to create instance", e);
+			}
+		}
+		return null;
+	}
+
+	public static <T> Map<String, T> toMap(ConfigValue value, Class<T> cls) {
+		Map<String, T> map = new HashMap<String, T>();
+		for (Map.Entry<String, ConfigValue> en : value.toValueMap().entrySet()) {
+			T v = toObject(en.getValue(), cls);
+			map.put(en.getKey(), v);
+		}
+		return map;
+	}
 	@SuppressWarnings("unchecked")
 	private static <T> T toPrimitive(ConfigValue value, Class<T> cls) {
 		if (cls.equals(Properties.class)) {
@@ -95,6 +135,10 @@ public final class ValueUtil {
 		}
 		if (cls.equals(BigDecimal.class)) {
 			return cls.cast(new BigDecimal(strVal));
+		}
+		// if the given class is a subclass of JsonValue
+		if (JsonValue.class.isAssignableFrom(cls)) {
+			return cls.cast(value.toJson());
 		}
 		return null;
 	}
@@ -137,6 +181,9 @@ public final class ValueUtil {
 		}
 	}
 	public static void setObject(ValueBuilder builder, String name, Object obj) {
+		if (obj == null) {
+			return;
+		}
 		if (obj instanceof Properties) {
 			builder.add(name, (Properties) obj);
 		} else if (obj instanceof String) {

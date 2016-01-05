@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   Copyright 2015 Junichi Tatemura
+ *   Copyright 2015-2016 Junichi Tatemura
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ public interface ConfigValue {
 
 	<T> T toObject(Class<T> objectClass);
 
+	<T> Map<String, T> toObjectMap(Class<T> valueClass);
 	/**
 	 * Interprets the value as a map.
 	 * @return an empty value if there is no

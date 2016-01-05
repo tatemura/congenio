@@ -20,7 +20,7 @@ limitations under the License.
 
 	<groupId>com.nec.congenio</groupId>
 	<artifactId>congenio</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<!-- version>0.0.1-SNAPSHOT</version -->
 	<packaging>jar</packaging>
 
