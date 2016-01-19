@@ -75,4 +75,18 @@
 	    <c>6</c>
 	  </success>
 	</Test>
+	<Test name="extendsFromLibCascade">
+	  <!-- lib:test:b refers to
+	  lib:sub:a -->
+	  <libs>test=repo;sub=repo/sub</libs>
+	  <test extends="lib:test:b">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>4</b>
+	    <c>6</c>
+	  </success>
+	</Test>
 </Tests>

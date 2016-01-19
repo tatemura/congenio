@@ -129,12 +129,15 @@ public abstract class SearchPath implements PathContext {
 		return new FileSearchPath(Arrays.asList(baseDir), libp);
 		
 	}
-	public static PathContext create(File dir) {
+	public static PathContext create(File dir, LibPathContext libp) {
 		if (dir.isDirectory()) {
-			return new FileSearchPath(Arrays.asList(dir));
+			return new FileSearchPath(Arrays.asList(dir), libp);
 		} else {
-			return new FileSearchPath(Arrays.asList(dir.getParentFile()));
+			return new FileSearchPath(Arrays.asList(dir.getParentFile()), libp);
 		}
+	}
+	public static PathContext create(File dir) {
+		return create(dir, new LibPathContext());
 	}
 
 	@Nullable

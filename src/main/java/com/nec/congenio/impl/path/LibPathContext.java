@@ -44,7 +44,7 @@ public class LibPathContext {
 	}
 
 	public void setPath(String libName, File dir) {
-		setPathContext(libName, SearchPath.create(dir));
+		setPathContext(libName, SearchPath.create(dir, this));
 	}
 
 	public void setPathContext(String libName, PathContext lib) {
