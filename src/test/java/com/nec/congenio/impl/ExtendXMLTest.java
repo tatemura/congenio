@@ -44,6 +44,10 @@ public class ExtendXMLTest {
 		successCases("deep");
 	}
 	@Test
+	public void testExtendsWithAttrs() {
+		successCases("extend_attrs");
+	}
+	@Test
 	public void testLibExtends() {
 		successCases("lib");
 	}

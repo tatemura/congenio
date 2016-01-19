@@ -1,5 +1,5 @@
 <Tests>
-	<Test>
+	<Test name="attrNameTextNodeValue">
 	  <repo>
 	    <a>
 	      <property name="a">1</property>
@@ -16,7 +16,7 @@
 	      <property name="c">6</property>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="tagNameAndAttrName">
 	  <repo>
 	    <a>
 	      <property name="a">1</property>
@@ -37,7 +37,7 @@
 	      <b>4</b>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="attrValueAndTextNodeValue">
 	  <repo>
 	    <a>
 	      <property name="a" value="1"/>

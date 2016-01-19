@@ -26,6 +26,8 @@ import org.w3c.dom.Node;
 
 import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
+import com.nec.congenio.value.xml.Attrs;
+import com.nec.congenio.value.xml.XMLValue;
 import com.nec.congenio.xml.XML;
 
 public class ExtendXML {
@@ -148,6 +150,8 @@ public class ExtendXML {
                 if (deep) {
                     cDst.removeAttribute(ConfigDescription.ATTR_EXTENDS);
                 	inherit(cDst, cSrc, pc);
+                } else {
+                	inheritAttrs(cDst, cSrc);
                 }
         		e.appendChild(cDst);
         	} else {
@@ -158,10 +162,20 @@ public class ExtendXML {
             resolveInheritance(cExt, pc);
         	e.appendChild(cExt);
         }
+        inheritAttrs(e, proto);
+    }
+    private void inheritAttrs(Element e, Element proto) {
         for (Map.Entry<String, String> entry
                 : XML.getAttributes(proto).entrySet()) {
-            if (XML.getAttribute(entry.getKey(), e, null) == null) {
-                e.setAttribute(entry.getKey(), entry.getValue());
+        	String name = entry.getKey();
+        	if (Attrs.NAME.equals(name)) {
+        		// ignore. do not inherit.
+        	} else if (Attrs.VALUE.equals(name)) {
+        		if (!XMLValue.hasValue(e)) {
+        			e.setAttribute(name, entry.getValue());
+        		}
+        	} else if (XML.getAttribute(name, e, null) == null) {
+                e.setAttribute(name, entry.getValue());
             }
         }
     }

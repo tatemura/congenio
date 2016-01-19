@@ -1,0 +1,30 @@
+<Tests>
+	<Test name="inheritChildAttrs">
+	  <repo>
+	    <a><a test="x">1</a><b>2</b><c type="number"/></a>
+	  </repo>
+	  <test extends="a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a test="x">5</a>
+	    <b>2</b>
+	    <c type="number">6</c>
+	  </success>
+	</Test>
+	<Test name="inheritValueAttrs">
+	  <repo>
+	    <a><a value="1"/><b value="2"/><c>3</c></a>
+	  </repo>
+	  <test extends="a">
+	     <a>5</a>
+	     <c value="6"/>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b value="2"/>
+	    <c value="6"/>
+	  </success>
+	</Test>
+</Tests>

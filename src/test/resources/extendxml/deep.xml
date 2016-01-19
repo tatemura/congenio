@@ -1,5 +1,5 @@
 <Tests>
-	<Test>
+	<Test name="withoutDeep">
 	  <comment>without deep extension</comment>
 	  <repo>
 	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
@@ -13,7 +13,7 @@
 	    <c>6</c>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="withDeep">
 	  <comment>with deep extension</comment>
 	  <repo>
 	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
@@ -27,7 +27,7 @@
 	    <c>6</c>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="withDeeper">
 	  <comment>with deeper extension</comment>
 	  <repo>
 	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>
@@ -41,7 +41,7 @@
 	    <c>6</c>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="withDuplicateDeep">
 	  <comment>with duplicate deep extension</comment>
 	  <repo>
 	    <a><a><a><a>3</a><b>4</b></a><b>2</b></a></a>

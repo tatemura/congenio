@@ -136,6 +136,15 @@ public class XMLValue extends AbstractValue implements ConfigValue {
 		return toPrimitive(root);
 	}
 
+	public static boolean hasValue(Element e) {
+	    String avalue = XML.getAttribute(Attrs.VALUE, e, null);
+	    if (avalue != null) {
+	    	return true;
+	    } else {
+	    	String value = e.getTextContent().trim();
+	    	return !value.isEmpty();
+	    }
+	}
 	public static PrimitiveValue toPrimitive(Element e) {
 		PrimitiveValue v;
 	    String avalue = XML.getAttribute(Attrs.VALUE, e, null);
