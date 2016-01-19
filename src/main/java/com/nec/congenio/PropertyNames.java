@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,22 @@
  *******************************************************************************/
 package com.nec.congenio;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Writer;
-import java.net.URL;
+public final class PropertyNames {
 
-public interface ValueFormat {
+	/**
+	 * Semicolon-separated pairs of lib path definitions.
+	 * A lib path definition is given in the form of "name=path".
+	 * A path can start with "/" (for an absolute path) or "~/"
+	 * (for a path from the user's home). Otherwise, it is defined
+	 * relative to the current working directory.
+	 * For example:
+	 * <pre>
+	 * "conf=../config;server=defs/server;client=~/defs/client;test=/tmp/test"
+	 * </pre>
+	 */
+	public static final String PROP_LIBS = "congen.libs";
 
-	ConfigValue parse(String data);
-
-	ConfigValue parse(URL url);
-
-	ConfigValue parse(File file);
-
-	ConfigValue parse(InputStream instr);
-
-	void write(ConfigValue conf, Writer writer, boolean indent);
+	private PropertyNames() {
+	}
 
 }

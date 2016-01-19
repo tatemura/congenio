@@ -1,0 +1,49 @@
+<Tests>
+  <Test name="testLib">
+	  <lib name="test">
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </lib>
+	  <test extends="lib:test:a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>2</b>
+	    <c>6</c>
+	  </success>
+  </Test>
+  <Test name="testTwoLibs">
+	  <lib name="x">
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </lib>
+	  <lib name="y">
+	    <a><a>3</a><b>4</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </lib>
+	  <test>
+	   <x extends="lib:x:a">
+	     <a>5</a>
+	     <c>6</c>
+	   </x>
+	   <y extends="lib:y:a">
+	     <a>5</a>
+	     <c>6</c>
+	   </y>
+	  </test>
+	  <success>
+	    <x>
+	      <a>5</a>
+	      <b>2</b>
+	      <c>6</c>
+	    </x>
+	   <y>
+	      <a>5</a>
+	      <b>4</b>
+	      <c>6</c>
+	    </y>
+	  </success>
+  </Test>
+</Tests>

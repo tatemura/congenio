@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package com.nec.congenio;
+package com.nec.congenio.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Writer;
-import java.net.URL;
+public interface PathContext {
 
-public interface ValueFormat {
-
-	ConfigValue parse(String data);
-
-	ConfigValue parse(URL url);
-
-	ConfigValue parse(File file);
-
-	ConfigValue parse(InputStream instr);
-
-	void write(ConfigValue conf, Writer writer, boolean indent);
+	/**
+	 * Translates a path expression to
+	 * a path to a config resource.
+	 * @param pathExpr the path expression of
+	 * the configuration generation language.
+	 * @return a config path translated by this
+	 * provider.
+	 */
+	ConfigPath interpret(String pathExpr);
 
 }

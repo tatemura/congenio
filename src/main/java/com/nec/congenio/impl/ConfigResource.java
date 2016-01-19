@@ -1,17 +1,17 @@
 /*******************************************************************************
- *   Copyright 2015 Junichi Tatemura
+ * Copyright 2015 Junichi Tatemura
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *******************************************************************************/
 package com.nec.congenio.impl;
 
@@ -29,20 +29,36 @@ import com.nec.congenio.json.JsonXML;
 import com.nec.congenio.xml.XML;
 
 public abstract class ConfigResource {
-	public static ConfigResource create(SearchPath path, File file) {
+	public static ConfigResource create(PathContext path, File file) {
 		return new FileConfigResource(path, file);
 	}
-	public static ConfigResource create(SearchPath path, URL url) {
+	public static ConfigResource create(PathContext path, URL url) {
 		return new URLConfigResource(path, url);
 	}
+	/**
+	 * Gets the content of the resource as an
+	 * XML element
+	 * @return the root element of
+	 * the content.
+	 */
 	public abstract Element createElement();
-	public abstract SearchPath searchPath();
+
+	/**
+	 * Gets the context (associated with this resource)
+	 * that interprets a reference from this resource
+	 * to another.
+	 */
+	public abstract PathContext pathContext();
+
+	/**
+	 * Gets the URI of the content (e.g. URL or file path).
+	 */
 	public abstract String getURI();
 
 	static class URLConfigResource extends ConfigResource {
 		private final URL url;
-		private final SearchPath path;
-		public URLConfigResource(SearchPath path, URL url) {
+		private final PathContext path;
+		public URLConfigResource(PathContext path, URL url) {
 			this.url = url;
 			this.path = path;
 		}
@@ -53,7 +69,7 @@ public abstract class ConfigResource {
 		}
 
 		@Override
-		public SearchPath searchPath() {
+		public PathContext pathContext() {
 			return path;
 		}
 
@@ -70,8 +86,8 @@ public abstract class ConfigResource {
 	}
 	static class FileConfigResource extends ConfigResource {
 		private final File file;
-		private final SearchPath path;
-		public FileConfigResource(SearchPath path, File file) {
+		private final PathContext path;
+		public FileConfigResource(PathContext path, File file) {
 			this.file = file;
 			this.path = path;
 		}
@@ -82,7 +98,7 @@ public abstract class ConfigResource {
 			}
 			return XML.parse(file).getDocumentElement();
 		}
-		public SearchPath searchPath() {
+		public PathContext pathContext() {
 			return path;
 		}
 		@Override

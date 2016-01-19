@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package com.nec.congenio;
+package com.nec.congenio.test;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Writer;
-import java.net.URL;
+import org.w3c.dom.Element;
 
-public interface ValueFormat {
+import com.nec.congenio.impl.ConfigResource;
+import com.nec.congenio.impl.PathContext;
 
-	ConfigValue parse(String data);
+public class MockResource extends ConfigResource {
+	private final PathContext path;
+	private final String uri;
+	private final Element src;
+	public MockResource(PathContext path, String uri,
+			Element src) {
+		this.path = path;
+		this.uri = uri;
+		this.src = src;
+	}
+	@Override
+	public Element createElement() {
+		return (Element) src.cloneNode(true);
+	}
 
-	ConfigValue parse(URL url);
+	@Override
+	public PathContext pathContext() {
+		return path;
+	}
 
-	ConfigValue parse(File file);
-
-	ConfigValue parse(InputStream instr);
-
-	void write(ConfigValue conf, Writer writer, boolean indent);
-
+	@Override
+	public String getURI() {
+		return uri;
+	}
+	
 }

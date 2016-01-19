@@ -1,19 +1,19 @@
 /*******************************************************************************
- *   Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *******************************************************************************/
-package com.nec.congenio.impl;
+package com.nec.congenio.impl.path;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,25 +27,39 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import javax.annotation.Nullable;
 
 import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
+import com.nec.congenio.PropertyNames;
+import com.nec.congenio.impl.ConfigPath;
+import com.nec.congenio.impl.ConfigResource;
+import com.nec.congenio.impl.PathContext;
+import com.nec.congenio.impl.ResourcePointer;
 
-public abstract class SearchPath {
-	public static SearchPath create() {
+public abstract class SearchPath implements PathContext {
+	public static SearchPath create(Properties props) {
+		String libdef = props.getProperty(PropertyNames.PROP_LIBS);
+		LibPathContext libs = null;
+		if (libdef != null) {
+			libs = LibPathContext.create(libdef);
+		}
 		File conf = new File(".cdglpath");
 		if (conf.isFile()) {
+			if (libs != null) {
+				return new FileSearchPath(readPaths(conf), libs);
+			}
 			return new FileSearchPath(readPaths(conf));
 		}
+		if (libs != null) {
+			return new FileSearchPath(new ArrayList<File>(), libs);
+		}
+		return new NoSearchPath();
+	}
 
-		return new NoSearchPath();
-	}
-	public static SearchPath none() {
-		return new NoSearchPath();
-	}
-	public static SearchPath create(Class<?> cls, String prefix) {
+	public static PathContext create(Class<?> cls, String prefix) {
 		return new ResourceSearchPath(cls, prefix, new NoSearchPath());
 	}
 
@@ -83,25 +97,58 @@ public abstract class SearchPath {
 		}
 		return paths;
 	}
+	private final LibPathContext libp;
 	public SearchPath() {
+		libp = new LibPathContext();
+	}
+	public SearchPath(LibPathContext libp) {
+		this.libp = libp;
 	}
 
-	public ConfigPath getPath(String pathExpr) {
-		return new ConfigPath(this, pathExpr);
+	protected LibPathContext libPath() {
+		return libp;
 	}
+	public ConfigPath interpret(String pathExpr) {
+		PathExpression exp = PathExpression.parse(pathExpr);
+		ResourcePointer rp = new ResourcePointerImpl(this, exp);
+		return new ConfigPath(rp, exp.getDocPath());
+	}
+
 	public ConfigResource toResource(File file) {
 		/**
 		 * NOTE: file.getParentFile() can be null
 		 * (= ".")
 		 */
 		List<File> paths = Arrays.asList(file.getParentFile());
-		return ConfigResource.create(new FileSearchPath(paths, this), file);
+		return ConfigResource.create(new FileSearchPath(paths, libp, this), file);
+	}
+
+	public static PathContext create(File dir, String libdef) {
+		File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
+		LibPathContext libp = LibPathContext.create(libdef, baseDir);
+		return new FileSearchPath(Arrays.asList(baseDir), libp);
+		
+	}
+	public static PathContext create(File dir) {
+		if (dir.isDirectory()) {
+			return new FileSearchPath(Arrays.asList(dir));
+		} else {
+			return new FileSearchPath(Arrays.asList(dir.getParentFile()));
+		}
 	}
 
 	@Nullable
 	public abstract ConfigResource findResource(String name);
 
-	public ConfigResource getResource(String name) {
+	private ConfigResource getResource(PathExpression exp) {
+		String scheme = exp.getScheme();
+		if (LibPathContext.SCHEME.equals(scheme)) {
+			return libp.getResource(exp);
+		} else if (!scheme.isEmpty()) {
+			throw new ConfigException("unsupported path scheme: "
+					+ scheme);
+		}
+		String name = exp.getPathPart();
 		ConfigResource res = findResource(name);
 		if (res != null) {
 			return res;
@@ -170,19 +217,29 @@ public abstract class SearchPath {
 		public FileSearchPath(List<File> paths) {
 			this(paths, new NoSearchPath());
 		}
+		public FileSearchPath(List<File> paths, LibPathContext libp) {
+			this(paths, libp, new NoSearchPath());
+		}
+
 		public FileSearchPath(List<File> paths, SearchPath base) {
+			this.paths = paths;
+			this.base = base;
+		}
+		public FileSearchPath(List<File> paths, LibPathContext libp,
+				SearchPath base) {
+			super(libp);
 			this.paths = paths;
 			this.base = base;
 		}
 		public ConfigResource toResource(File file) {
 			return ConfigResource.create(push(file.getParentFile()), file);
 		}
-		protected SearchPath push(File dir) {
+		protected PathContext push(File dir) {
 			List<File> newpath = new ArrayList<File>(
 					paths.size() + 1);
 			newpath.add(dir);
 			newpath.addAll(paths);
-			return new FileSearchPath(newpath, base);
+			return new FileSearchPath(newpath, this.libPath(), base);
 		}
 		@Override
 		public ConfigResource findResource(String name) {
@@ -232,6 +289,18 @@ public abstract class SearchPath {
 	        	}
 			}
 			return null;
+		}
+	}
+	static class ResourcePointerImpl implements ResourcePointer {
+		private final SearchPath sp;
+		private final PathExpression exp;
+		public ResourcePointerImpl(SearchPath sp, PathExpression exp) {
+			this.sp = sp;
+			this.exp = exp;
+		}
+		@Override
+		public ConfigResource getResource() {
+			return sp.getResource(exp);
 		}
 	}
 }

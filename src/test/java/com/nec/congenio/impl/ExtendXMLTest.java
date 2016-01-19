@@ -1,40 +1,84 @@
+/*******************************************************************************
+ * Copyright 2015 Junichi Tatemura
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package com.nec.congenio.impl;
 
 import org.junit.Test;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.impl.ExtendXML;
-import com.nec.congenio.test.MockSearchPath;
+import com.nec.congenio.impl.path.SearchPath;
+import com.nec.congenio.test.MockPathContext;
 import com.nec.congenio.test.TestDataUtil;
 import com.nec.congenio.xml.XML;
 
 public class ExtendXMLTest {
-
+	private String dirName = "extendxml";
 	@Test
 	public void testSimpleExtends() {
-		successCases("extendxml/extend");
+		successCases("extend");
 	}
 
 	@Test
 	public void testNamedExtends() {
-		successCases("extendxml/extendname");
+		successCases("extendname");
 	}
 	@Test
 	public void testDocPathExtends() {
-		successCases("extendxml/docpath");
+		successCases("docpath");
 	}
 	@Test
 	public void testDeepExtends() {
-		successCases("extendxml/deep");
+		successCases("deep");
+	}
+	@Test
+	public void testLibExtends() {
+		successCases("lib");
+	}
+
+	@Test
+	public void testExtendsFromDir() {
+		successCases("extenddirs");
 	}
 
 	private void successCases(String name) {
-		for (Element e : TestDataUtil.tests(name)) {
+		for (Element e : TestDataUtil.tests(dirName + "/" + name)) {
 			Element t = XML.getSingleElement("test", e);
-			MockSearchPath path = MockSearchPath.create(XML.getSingleElement("repo", e));
-			ExtendXML.resolve(t, path);
+			ExtendXML.resolve(t, createPathContext(e));
 			Element r = XML.getSingleElement("success", e);
 			XMLValueUtil.assertEq(r, t);
 		}
+	}
+	private PathContext createPathContext(Element e) {
+		Element repo = XML.getSingleElement("repo", e, false);
+		boolean repoFound = repo != null;
+		MockPathContext path = (repoFound ? 
+				MockPathContext.create(repo) : new MockPathContext());
+		for (Element l : XML.getElements("lib", e)) {
+			repoFound = true;
+			MockPathContext lib = MockPathContext.create(l);
+			path.setLib(l.getAttribute("name"), lib);
+		}
+		if (repoFound) {
+			return path;
+		}
+		Element libs = XML.getSingleElement("libs", e, false);
+		if (libs != null) {
+			return SearchPath.create(TestDataUtil.getFile(dirName),
+					libs.getTextContent().trim());
+		}
+		return SearchPath.create(TestDataUtil.getFile(dirName));
 	}
 }

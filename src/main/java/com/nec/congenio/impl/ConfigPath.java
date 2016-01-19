@@ -1,39 +1,35 @@
 /*******************************************************************************
- *   Copyright 2015 Junichi Tatemura
+ * Copyright 2015 Junichi Tatemura
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *******************************************************************************/
 package com.nec.congenio.impl;
 
-public class ConfigPath {
-	private final SearchPath path;
-	private final String name;
-	private final String rootName;
+/**
+ * Resource pointer optionally associated  with
+ * a document path. Whereas a resource pointer points
+ * to the root of a config document, a conf path can
+ * refer to a sub element of the document.
+ * @author tatemura
+ *
+ */
+public class ConfigPath implements ResourcePointer {
 	private final String docPath;
-	public ConfigPath(SearchPath path, String name) {
-		this.path = path;
-		this.name = name;
-		String[] parts = name.split("#");
-		if (parts.length == 2) {
-			rootName = parts[0];
-			docPath = parts[1];
-		} else {
-			rootName = name;
-			docPath = "";
-		}
-	}
-	public String getName() {
-		return name;
+	private final ResourcePointer rp;
+
+	public ConfigPath(ResourcePointer rp, String docPath) {
+		this.rp = rp;
+		this.docPath = docPath;
 	}
 	public boolean hasDocPath() {
 		return !docPath.isEmpty();
@@ -41,13 +37,11 @@ public class ConfigPath {
 	public String getDocPath() {
 		return docPath;
 	}
-	public String getRootName() {
-		return rootName;
-	}
 	public String getResourceURI() {
-		return path.getResource(rootName).getURI();
+		return rp.getResource().getURI();
 	}
+	@Override
 	public ConfigResource getResource() {
-		return path.getResource(rootName);
+		return rp.getResource();
 	}
 }

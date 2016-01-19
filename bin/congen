@@ -28,7 +28,7 @@ function usage {
 #
 # command options
 #
-while getopts ":ehji:p:" opt; do
+while getopts ":ehji:p:l:" opt; do
   case $opt in
   e)
   	CDL_MODE_OPTS="$CDL_MODE_OPTS -Dcdl.mode=extend-only"
@@ -41,6 +41,9 @@ while getopts ":ehji:p:" opt; do
   	;;
   p)
   	CDL_MODE_OPTS="$CDL_MODE_OPTS -Dcdl.doc.path=$OPTARG"
+  	;;
+  l)
+  	CDL_MODE_OPTS="$CDL_MODE_OPTS -Dcongen.libs=$OPTARG"
   	;;
   h)
     usage

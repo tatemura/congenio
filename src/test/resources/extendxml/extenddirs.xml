@@ -1,0 +1,78 @@
+<Tests>
+    <!--
+    tests of documents that refer to
+    files in a directory (in the resource)
+     -->
+	<Test name="extendsFromRepo">
+	  <test extends="repo/a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>2</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="extendsFromRepoSub">
+	  <test extends="repo/sub/a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>4</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="extendsFromLib">
+	  <libs>test=repo</libs>
+	  <test extends="lib:test:a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>2</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="extendsFromLib2">
+	  <libs>test=repo;sub=repo/sub</libs>
+	  <test>
+	    <x extends="lib:test:a">
+	       <a>5</a>
+	       <c>6</c>
+	    </x>
+	    <y extends="lib:sub:a">
+	       <a>5</a>
+	       <c>6</c>
+	    </y>
+	  </test>
+	  <success>
+	    <x>
+	      <a>5</a>
+	      <b>2</b>
+	      <c>6</c>
+	    </x>
+	    <y>
+	      <a>5</a>
+	      <b>4</b>
+	      <c>6</c>
+	    </y>
+	  </success>
+	</Test>
+	<Test name="extendsFromLibOverride">
+	  <!-- the latter overrides the former -->
+	  <libs>test=repo;test=repo/sub</libs>
+	  <test extends="lib:test:a">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>4</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+</Tests>
