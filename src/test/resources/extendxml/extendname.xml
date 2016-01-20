@@ -56,4 +56,24 @@
 	      <property name="c" value="6"/>
 	  </success>
 	</Test>
+	<Test name="extendRootWithName">
+	  <repo>
+	     <a name="x">
+	      <property name="a" value="1"/>
+	      <property name="b" value="1"/>
+	     </a>
+	  </repo>
+	  <test>
+	    <a extends="a">
+	      <property name="a">5</property>
+	    </a>
+	  </test>
+	  <success>
+	    <a name="x">
+	      <property name="a">5</property>
+	      <property name="b" value="1"/>
+	    </a>
+	  </success>
+	</Test>
+	
 </Tests>

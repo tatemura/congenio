@@ -168,9 +168,7 @@ public class ExtendXML {
         for (Map.Entry<String, String> entry
                 : XML.getAttributes(proto).entrySet()) {
         	String name = entry.getKey();
-        	if (Attrs.NAME.equals(name)) {
-        		// ignore. do not inherit.
-        	} else if (Attrs.VALUE.equals(name)) {
+        	if (Attrs.VALUE.equals(name)) {
         		if (!XMLValue.hasValue(e)) {
         			e.setAttribute(name, entry.getValue());
         		}

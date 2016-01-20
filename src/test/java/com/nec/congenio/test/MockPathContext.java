@@ -41,8 +41,7 @@ public class MockPathContext implements PathContext {
 		MockPathContext path = new MockPathContext();
 		if (root != null) {
 			for (Element e : XML.getElements(root)) {
-				String name = XML.getAttribute("name", e, e.getTagName());
-				path.set(name, e);
+				path.set(e.getTagName(), e);
 			}
 		}
 		return path;

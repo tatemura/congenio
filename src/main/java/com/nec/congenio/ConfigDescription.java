@@ -43,7 +43,12 @@ public abstract class ConfigDescription {
 		return create(file).evaluate();
 	}
     public static ConfigDescription create(File file) {
-    	return create(file, new Properties());
+    	try {
+			return create(file, congenProperties());
+		} catch (IOException e) {
+			throw new ConfigException(
+					"IOException reading properties", e);
+		}
     }	
     public static ConfigDescription create(File file, Properties props) {
         return new ConfigFactory(props).create(file);
