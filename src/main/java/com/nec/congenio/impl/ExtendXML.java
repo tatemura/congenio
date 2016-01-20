@@ -128,6 +128,7 @@ public class ExtendXML {
             elemMap.put(XMLConfigDescription.nameOf(c), c);
             elemList.add(c);
         }
+        List<Element> sources = XML.getElements(proto);
         if (elemMap.isEmpty()) {
         	if (!e.getTextContent().trim().isEmpty()) {
             	/**
@@ -141,7 +142,7 @@ public class ExtendXML {
         for (Node n : XML.getChildren(e)) {
         	e.removeChild(n);
         }
-        for (Element cSrc : XML.getElements(proto)) {
+        for (Element cSrc : sources) {
         	String name = XMLConfigDescription.nameOf(cSrc);
         	if (elemMap.containsKey(name)) {
         		Element cDst = elemMap.remove(name);
@@ -161,6 +162,12 @@ public class ExtendXML {
         for (Element cExt : elemList) {
             resolveInheritance(cExt, pc);
         	e.appendChild(cExt);
+        }
+        if (sources.isEmpty() && elemMap.isEmpty()) {
+        	/**
+        	 * leaf to leaf inheritance
+        	 */
+        	e.setTextContent(proto.getTextContent().trim());
         }
         inheritAttrs(e, proto);
     }

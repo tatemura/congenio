@@ -59,5 +59,27 @@
 	    <c><a>6</a><b>4</b></c>
 	  </success>
 	</Test>
+	<Test name="extendPrimitive">
+	  <repo>
+	    <a>1</a>
+	  </repo>
+	  <test>
+	    <v extends="a"/>
+	  </test>
+	  <success>
+	    <v>1</v>
+	  </success>
+	</Test>
+	<Test name="extendPrimitiveWithAttr">
+	  <repo>
+	    <a type="number">1</a>
+	  </repo>
+	  <test>
+	    <v extends="a"/>
+	  </test>
+	  <success>
+	    <v type="number">1</v>
+	  </success>
+	</Test>
 </Tests>
 
