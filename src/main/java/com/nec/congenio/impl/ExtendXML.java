@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,12 +95,13 @@ public class ExtendXML {
     }
 
     private Element getPrototype(ConfigPath path) {
-		Element e = map.get(path.getResourceURI());
+    	String uri = path.getResourceURI();
+    	Element e = map.get(uri);
 		if (e == null) {
 			ConfigResource resource = path.getResource();
             e = resource.createElement();
         	resolveInheritance(e, resource.pathContext());
-        	map.put(path.getResourceURI(), e);
+        	map.put(uri, e);
 		}
 		if (path.hasDocPath()) {
 			Element sub = XML.getSingleElement(path.getDocPath(), e, false);

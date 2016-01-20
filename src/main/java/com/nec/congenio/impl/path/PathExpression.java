@@ -74,5 +74,16 @@ public class PathExpression {
 	public String getDocPath() {
 		return docPath;
 	}
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		if (!scheme.isEmpty()) {
+			sb.append(scheme).append(":");
+		}
+		sb.append(path);
+		if (!docPath.isEmpty()) {
+			sb.append("#").append(docPath);
+		}
+		return sb.toString();
+	}
 
 }

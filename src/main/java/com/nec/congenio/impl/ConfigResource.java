@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,10 @@ public abstract class ConfigResource {
 	}
 	public static ConfigResource create(PathContext path, URL url) {
 		return new URLConfigResource(path, url);
+	}
+	public static ConfigResource create(PathContext path, String uri,
+			ValueFunc<Element> value) {
+		return new ValueConfigResource(path, uri, value);
 	}
 	/**
 	 * Gets the content of the resource as an
@@ -108,5 +112,30 @@ public abstract class ConfigResource {
 	    boolean isJsonFile() {
 	    	return file.getPath().endsWith(".json");
 	    }
+	}
+	static class ValueConfigResource extends ConfigResource {
+		private final PathContext path;
+		private final String uri;
+		private final ValueFunc<Element> value;
+		public ValueConfigResource(PathContext path,
+				String uri, ValueFunc<Element> value) {
+			this.path = path;
+			this.uri = uri;
+			this.value = value;
+		}
+		@Override
+		public Element createElement() {
+			return value.getValue();
+		}
+
+		@Override
+		public PathContext pathContext() {
+			return path;
+		}
+
+		@Override
+		public String getURI() {
+			return uri;
+		}	
 	}
 }

@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package com.nec.congenio.xml;
+package com.nec.congenio.impl;
 
-import com.nec.congenio.ConfigException;
-
-public class InvalidXMLException extends ConfigException {
-	private static final long serialVersionUID = 1L;
-	public InvalidXMLException(String msg, Throwable cause) {
-		super(msg, cause);
-	}
-	public InvalidXMLException(String msg) {
-		super(msg);
-	}
+public interface ValueFunc<T> {
+	T getValue();
 }

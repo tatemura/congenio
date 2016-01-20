@@ -58,7 +58,12 @@ public abstract class PrimitiveValue implements ConfigValue {
 		return new NumberValue(value);
 	}
 	public static NumberValue number(String value) {
-		return new NumberValue(new BigDecimal(value));
+		try {
+			return new NumberValue(new BigDecimal(value));
+		} catch (NumberFormatException e) {
+			throw new NumberFormatException(
+					"not a number: '" + value + "'");
+		}
 	}
 	public static PrimitiveValue number(PrimitiveValue v) {
 		if (v instanceof NumberValue) {

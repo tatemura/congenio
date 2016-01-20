@@ -98,6 +98,7 @@ public abstract class SearchPath implements PathContext {
 		return paths;
 	}
 	private final LibPathContext libp;
+	private final SysPath sysp = new SysPath();
 	public SearchPath() {
 		libp = new LibPathContext();
 	}
@@ -147,6 +148,8 @@ public abstract class SearchPath implements PathContext {
 		String scheme = exp.getScheme();
 		if (LibPathContext.SCHEME.equals(scheme)) {
 			return libp.getResource(exp);
+		} else if (SysPath.SCHEME.equals(scheme)) {
+			return sysp.getResource(exp);
 		} else if (!scheme.isEmpty()) {
 			throw new ConfigException("unsupported path scheme: "
 					+ scheme);

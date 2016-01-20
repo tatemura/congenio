@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,11 @@ public class ConfigPath implements ResourcePointer {
 	public String getDocPath() {
 		return docPath;
 	}
+	/**
+	 * Gets the unique ID of the resource (which
+	 * can be used as a key for caching the content).
+	 * @return a string that represents the URI.
+	 */
 	public String getResourceURI() {
 		return rp.getResource().getURI();
 	}
