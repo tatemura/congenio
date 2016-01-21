@@ -18,36 +18,26 @@ package com.nec.congenio.impl;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
-import com.nec.congenio.impl.RefXML;
-import com.nec.congenio.test.TestDataUtil;
+import com.nec.congenio.test.TestDataSet;
 import com.nec.congenio.xml.XML;
 
-public class RefXMLTest {
+public class ExtendMixinTest {
+	private TestDataSet set = new TestDataSet("extendxml");
 
 	@Test
-	public void testSimpleRef() {
-		for (Element e : TestDataUtil.tests("refxml/reference")) {
-			Element t = XML.getSingleElement("test", e);
-			Element r = XML.getSingleElement("success", e);
-			XMLValueUtil.assertEq(r, RefXML.resolve(t));
-		}
-	}
-	@Test
-	public void testCascadeRef() {
-		for (Element e : TestDataUtil.tests("refxml/refcascade")) {
-			Element t = XML.getSingleElement("test", e);
-			Element r = XML.getSingleElement("success", e);
-			XMLValueUtil.assertEq(r, RefXML.resolve(t));
-		}
-	}
-	@Test
-	public void testRefExtend() {
-		for (Element e : TestDataUtil.tests("refxml/refextend")) {
-			Element t = XML.getSingleElement("test", e);
-			Element r = XML.getSingleElement("success", e);
-			XMLValueUtil.assertEq(r, RefXML.resolve(t));
-		}
+	public void testMixin() {
+		successCases("mixin");
 	}
 
-
+	private void successCases(String name) {
+		for (Element e : set.testSet(name)) {
+			Element t = XML.getSingleElement("test", e);
+			Element b = XML.getSingleElement("base", e);
+			PathContext pc = set.createPathContext(e);
+			ExtendXML.resolve(b, pc);
+			ExtendXML.resolve(t, b, pc);
+			Element r = XML.getSingleElement("success", e);
+			XMLValueUtil.assertEq(r, t);
+		}
+	}
 }

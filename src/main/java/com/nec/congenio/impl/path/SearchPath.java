@@ -124,6 +124,22 @@ public abstract class SearchPath implements PathContext {
 		return ConfigResource.create(new FileSearchPath(paths, libp, this), file);
 	}
 
+	public ConfigResource toResource(Class<?> cls, String path) {
+		URL url = cls.getResource(path);
+		if (url == null) {
+			url = cls.getResource(path + ".xml");
+		}
+		if (url == null) {
+			throw new ConfigException("resource not found: " + path);
+		}
+		String prefix = new File(path).getParent();
+		if (prefix == null) {
+			prefix = "";
+		}
+		return ConfigResource.create(
+				new ResourceSearchPath(cls, prefix, this), url);
+	}
+
 	public static PathContext create(File dir, String libdef) {
 		File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
 		LibPathContext libp = LibPathContext.create(libdef, baseDir);
@@ -198,7 +214,11 @@ public abstract class SearchPath implements PathContext {
 		}
 		@Override
 		public ConfigResource findResource(String name) {
-			URL url = cls.getResource(prefix + name);
+			String path = prefix + name;
+			URL url = cls.getResource(path);
+			if (url == null) {
+				url = cls.getResource(path + ".xml");
+			}
 			if (url != null) {
 				return ConfigResource.create(this, url);
 			} else {

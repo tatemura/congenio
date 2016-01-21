@@ -1,0 +1,83 @@
+<Tests>
+	<Test name="singleMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </repo>
+	  <base>
+	  	<a>1</a><b>2</b>
+	  </base>
+	  <test>
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>2</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="mixinWithExtendedBase">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </repo>
+	  <base extends="a">
+	  	<a>1</a>
+	  </base>
+	  <test>
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>2</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="mixinWithExtendedMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </repo>
+	  <base extends="a">
+	  	<a>1</a>
+	  </base>
+	  <test extends="b">
+	     <a>5</a>
+	     <c>6</c>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>4</b>
+	    <c>6</c>
+	  </success>
+	</Test>
+	<Test name="singleDeepMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><a>3</a><b>4</b></b>
+	  </repo>
+	  <base>
+	    <v>
+	  	  <a>1</a>
+	  	  <b>2</b>
+	    </v>
+	    <x>4</x>
+	  </base>
+	  <test>
+	     <v extends=".">
+	       <a>5</a>
+	       <c>6</c>
+	     </v>
+	  </test>
+	  <success>
+	    <v>
+	      <a>5</a>
+	      <b>2</b>
+	      <c>6</c>
+	    </v>
+	    <x>4</x>
+	  </success>
+	</Test>
+</Tests>

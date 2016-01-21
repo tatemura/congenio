@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Junichi Tatemura
+ * Copyright 2015, 2016 Junichi Tatemura
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ import org.junit.Test;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.impl.ExtendXML;
-import com.nec.congenio.impl.path.SearchPath;
-import com.nec.congenio.test.MockPathContext;
-import com.nec.congenio.test.TestDataUtil;
+import com.nec.congenio.test.TestDataSet;
 import com.nec.congenio.xml.XML;
 
 public class ExtendXMLTest {
-	private String dirName = "extendxml";
+	private TestDataSet set = new TestDataSet("extendxml");
 	@Test
 	public void testSimpleExtends() {
 		successCases("extend");
@@ -58,31 +56,11 @@ public class ExtendXMLTest {
 	}
 
 	private void successCases(String name) {
-		for (Element e : TestDataUtil.tests(dirName + "/" + name)) {
+		for (Element e : set.testSet(name)) {
 			Element t = XML.getSingleElement("test", e);
-			ExtendXML.resolve(t, createPathContext(e));
+			ExtendXML.resolve(t, set.createPathContext(e));
 			Element r = XML.getSingleElement("success", e);
 			XMLValueUtil.assertEq(r, t);
 		}
-	}
-	private PathContext createPathContext(Element e) {
-		Element repo = XML.getSingleElement("repo", e, false);
-		boolean repoFound = repo != null;
-		MockPathContext path = (repoFound ? 
-				MockPathContext.create(repo) : new MockPathContext());
-		for (Element l : XML.getElements("lib", e)) {
-			repoFound = true;
-			MockPathContext lib = MockPathContext.create(l);
-			path.setLib(l.getAttribute("name"), lib);
-		}
-		if (repoFound) {
-			return path;
-		}
-		Element libs = XML.getSingleElement("libs", e, false);
-		if (libs != null) {
-			return SearchPath.create(TestDataUtil.getFile(dirName),
-					libs.getTextContent().trim());
-		}
-		return SearchPath.create(TestDataUtil.getFile(dirName));
 	}
 }

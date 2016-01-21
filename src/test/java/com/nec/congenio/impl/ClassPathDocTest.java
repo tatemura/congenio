@@ -15,36 +15,31 @@
  *******************************************************************************/
 package com.nec.congenio.impl;
 
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
 import org.junit.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import com.nec.congenio.impl.ForLoop;
-import com.nec.congenio.test.TestDataUtil;
-import com.nec.congenio.xml.XML;
+import com.nec.congenio.ConfigValue;
 
-public class ForeachXMLTest {
+public class ClassPathDocTest {
+
 
 	@Test
-	public void testForEach() {
-		successCases("forxml/foreach");
+	public void test() {
+		XMLConfigDescription conf = new ConfigFactory(new Properties())
+			.create(ClassPathDocTest.class, "data");
+		ConfigValue v = conf.resolve();
+		assertEquals(1, v.getInt("a"));
+		assertEquals(2, v.getInt("b"));
 	}
 	@Test
-	public void testMultiForEach() {
-		successCases("forxml/multi");
+	public void testExtend() {
+		XMLConfigDescription conf = new ConfigFactory(new Properties())
+			.create(ClassPathDocTest.class, "data1");
+		ConfigValue v = conf.resolve();
+		assertEquals(3, v.getInt("a"));
+		assertEquals(2, v.getInt("b"));
 	}
-	
-	void successCases(String name) {
-		for (Element e : TestDataUtil.tests(name)) {
-			Document doc = e.getOwnerDocument();
-			Element t = XML.getSingleElement("test", e);
-			Element res = doc.createElement("success");
-			for (Element x : ForLoop.unfold(t)) {
-				res.appendChild(x);
-			}
-			Element r = XML.getSingleElement("success", e);
-			XMLValueUtil.assertEq(r, res);
-		}
-	}
-
 }

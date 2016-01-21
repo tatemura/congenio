@@ -53,6 +53,29 @@ public abstract class ConfigDescription {
     public static ConfigDescription create(File file, Properties props) {
         return new ConfigFactory(props).create(file);
     }
+    public static ConfigDescription create(Class<?> cls, String name) {
+    	try {
+			return create(cls, name, congenProperties());
+		} catch (IOException e) {
+			throw new ConfigException(
+					"IOException reading properties", e);
+		}
+    }
+
+    public static ConfigDescription create(Class<?> cls, String name, Properties props) {
+    	return new ConfigFactory(props).create(cls, name);
+    }
+    public static ConfigDescription create(File file, ConfigDescription base) {
+    	try {
+			return create(file, base, congenProperties());
+		} catch (IOException e) {
+			throw new ConfigException(
+					"IOException reading properties", e);
+		}
+    }
+    public static ConfigDescription create(File file, ConfigDescription base, Properties props) {
+    	return new ConfigFactory(props).create(file, base);
+    }
 
     public abstract String getName();
 

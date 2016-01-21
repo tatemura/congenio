@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.w3c.dom.Element;
 
+import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.impl.path.SearchPath;
 
@@ -37,10 +38,30 @@ public class ConfigFactory {
     				+ file.getAbsolutePath());
     	}
     }
+    public XMLConfigDescription create(Class<?> cls, String resourcePath) {
+    	return create(path.toResource(cls, resourcePath));
+    }
+    public XMLConfigDescription create(File file, ConfigDescription base) {
+    	if (file.exists()) {
+        	return create(path.toResource(file),
+        			(XMLConfigDescription) base);
+    	} else {
+    		throw new ConfigException("file not found: "
+    				+ file.getAbsolutePath());
+    	}
+    }
 
     private XMLConfigDescription create(ConfigResource resource) {
     	Element e = resource.createElement();
     	ExtendXML.resolve(e, resource.pathContext());
     	return new XMLConfigDescription(e);
     }
+    private XMLConfigDescription create(ConfigResource resource,
+    		XMLConfigDescription base) {
+    	Element e = resource.createElement();
+    	ExtendXML.resolve(e, base.getRoot(),
+    			resource.pathContext());
+    	return new XMLConfigDescription(e);
+    }
+
 }

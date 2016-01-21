@@ -47,6 +47,10 @@ public class ExtendXML {
 		new ExtendXML().resolveInheritance(e, pc);
 	}
 
+ 	public static void resolve(Element e, Element base, PathContext pc) {
+ 		new ExtendXML().resolveMixin(e, base, pc);
+ 	}
+
 	public static void inherit(Element e, Element proto) {
 		new ExtendXML().inherit(e, proto, new PathContext() {
 
@@ -91,6 +95,24 @@ public class ExtendXML {
             ConfigPath path = pc.interpret(protoPath);
             inherit(e, getPrototype(path), pc);
             return false;
+        }
+    }
+
+    private void resolveMixin(Element e, Element base, PathContext pc) {
+        String protoPath = XML.getAttribute(ConfigDescription.ATTR_EXTENDS, e, null);
+        if (protoPath == null) {
+        	inherit(e, base, pc);
+        } else {
+            ConfigPath path = pc.interpret(protoPath);
+            if (path.hasDocPath()) {
+				throw new ConfigException(
+				"path (" + path.getDocPath() + ") cannot be used for mixin");
+            }
+			ConfigResource resource = path.getResource();
+            Element e1 = resource.createElement();
+        	resolveMixin(e1, base, resource.pathContext());
+            e.removeAttribute(ConfigDescription.ATTR_EXTENDS);
+        	inherit(e, e1, pc);
         }
     }
 
