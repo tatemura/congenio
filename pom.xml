@@ -59,9 +59,9 @@ limitations under the License.
 						<id>make-assembly</id>
 						<phase>package</phase>
 						<configuration>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
+          				  <descriptors>
+            			    <descriptor>src/assembly/dist.xml</descriptor>
+          				  </descriptors>
 						</configuration>
 						<goals>
 							<goal>single</goal>
@@ -77,6 +77,9 @@ limitations under the License.
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
+						<configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
 					</execution>
 				</executions>
 			</plugin>

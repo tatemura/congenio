@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2015 Junichi Tatemura
+# Copyright 2015, 2016 Junichi Tatemura
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,15 +14,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-base_dir="`dirname "$0"`/.."
-CLASSPATH=$base_dir/target/classes:$base_dir/target/dependency/*:$base_dir/lib/*:$CLASSPATH
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do 
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+base_dir="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
+
+CLASSPATH=$base_dir/lib/*:$CLASSPATH
+
+if [ -e "$base_dir/target" ]; then # development environment
+    THIS_JAR=`echo $base_dir/target/congenio-*.jar`
+    CLASSPATH=$THIS_JAR:$base_dir/target/lib/*:$CLASSPATH
+fi
+
 
 function usage {
-	echo "Usage: `basename "$0"` [ options ] cdlfile" >&2
-	echo "	-e: performs extension only" >&2
-	echo "  -j: output JSON" >&2
-	echo "  -i N: output Nth document (N=0,1,2,..)" >&2
-	echo "  -p PATH: output path of documents" >&2
+	echo "Usage: `basename "$0"` [ options ] file" >&2
+	echo "	-e:		performs extension only" >&2
+	echo "	-l LIBPATHS:	set lib: paths" >&2
+	echo "	-j:		output JSON" >&2
+	echo "	-i N:		output Nth document (N=0,1,2,..)" >&2
+	echo "	-p DOCPATH:	output path of documents" >&2
 	
 }
 #

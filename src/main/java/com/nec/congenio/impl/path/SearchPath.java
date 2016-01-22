@@ -15,15 +15,8 @@
  *******************************************************************************/
 package com.nec.congenio.impl.path;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,18 +35,8 @@ import com.nec.congenio.impl.ResourcePointer;
 public abstract class SearchPath implements PathContext {
 	public static SearchPath create(Properties props) {
 		String libdef = props.getProperty(PropertyNames.PROP_LIBS);
-		LibPathContext libs = null;
 		if (libdef != null) {
-			libs = LibPathContext.create(libdef);
-		}
-		File conf = new File(".cdglpath");
-		if (conf.isFile()) {
-			if (libs != null) {
-				return new FileSearchPath(readPaths(conf), libs);
-			}
-			return new FileSearchPath(readPaths(conf));
-		}
-		if (libs != null) {
+			LibPathContext libs = LibPathContext.create(libdef);
 			return new FileSearchPath(new ArrayList<File>(), libs);
 		}
 		return new NoSearchPath();
@@ -63,40 +46,6 @@ public abstract class SearchPath implements PathContext {
 		return new ResourceSearchPath(cls, prefix, new NoSearchPath());
 	}
 
-	private static List<File> readPaths(File conf) {
-		List<File> paths = new ArrayList<File>();
-		InputStream istr = null;
-		BufferedReader r = null;
-		try {
-			istr = new FileInputStream(conf);
-			InputStreamReader isr = new InputStreamReader(istr, Charset.forName("UTF-8"));
-			r = new BufferedReader(isr);
-			String line;
-			while ((line = r.readLine()) != null) {
-				paths.add(new File(line.trim()));
-			}
-		} catch (FileNotFoundException e) {
-		} catch (IOException e) {
-			/**
-			 * ignore
-			 * TODO WARN
-			 */
-		} finally {
-			if (istr != null) {
-				try {
-					istr.close();
-				} catch (IOException e) {
-				}
-			}
-			if (r != null) {
-				try {
-					r.close();
-				} catch (IOException e) {
-				}
-			}
-		}
-		return paths;
-	}
 	private final LibPathContext libp;
 	private final SysPath sysp = new SysPath();
 	public SearchPath() {
