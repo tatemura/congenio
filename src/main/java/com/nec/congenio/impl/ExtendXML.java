@@ -24,14 +24,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.value.xml.Attrs;
 import com.nec.congenio.value.xml.XMLValue;
 import com.nec.congenio.xml.XML;
 
 public class ExtendXML {
-	public static final String EXTEND_HERE_REFERENCE = ".";
 
     private final Map<String, Element> map =
             new HashMap<String, Element>();
@@ -72,14 +70,14 @@ public class ExtendXML {
 	 * contains deep extension (i.e., extends=".").
 	 */
     private boolean resolveInheritance(Element e, PathContext pc) {
-        String protoPath = XML.getAttribute(ConfigDescription.ATTR_EXTENDS, e, null);
-        if (protoPath == null) {
+    	ExtendPath p = ExtendPath.find(e);
+        if (p == null) {
         	boolean deep = false;
             for (Element c : XML.getElements(e)) {
                 deep |= resolveInheritance(c, pc);
             }
             return deep;
-        } else if (isDeepExtendPoint(protoPath)) {
+        } else if (p.isDeepExtendPoint()) {
         	/**
         	 * NOTE this extends="." will remain in
         	 * the output.
@@ -90,30 +88,38 @@ public class ExtendXML {
         	 * reference resolution may use it.
         	 */
         	return true;
-        } else {
-            e.removeAttribute(ConfigDescription.ATTR_EXTENDS);
-            ConfigPath path = pc.interpret(protoPath);
-            inherit(e, getPrototype(path), pc);
-            return false;
-        }
+        } 
+    	Element base = getPrototype(pc.interpret(p.getPath()));
+    	for (String m : p.getMixins()) {
+            base = getMixin(pc.interpret(m), base);
+    	}
+    	ExtendPath.remove(e);
+        inherit(e, base, pc);
+        return false;
     }
 
     private void resolveMixin(Element e, Element base, PathContext pc) {
-        String protoPath = XML.getAttribute(ConfigDescription.ATTR_EXTENDS, e, null);
-        if (protoPath == null) {
+    	ExtendPath p = ExtendPath.find(e);
+        if (p == null) {
         	inherit(e, base, pc);
         } else {
-            ConfigPath path = pc.interpret(protoPath);
-            if (path.hasDocPath()) {
-				throw new ConfigException(
-				"path (" + path.getDocPath() + ") cannot be used for mixin");
-            }
-			ConfigResource resource = path.getResource();
-            Element e1 = resource.createElement();
-        	resolveMixin(e1, base, resource.pathContext());
-            e.removeAttribute(ConfigDescription.ATTR_EXTENDS);
-        	inherit(e, e1, pc);
+        	for (String m : p.getMixins()) {
+                base = getMixin(pc.interpret(m), base);
+        	}
+            ConfigPath path = pc.interpret(p.getPath());
+        	ExtendPath.remove(e);
+        	inherit(e, getMixin(path, base), pc);
         }
+    }
+    private Element getMixin(ConfigPath path, Element base) {
+        if (path.hasDocPath()) {
+			throw new ConfigException(
+			"path (" + path.getDocPath() + ") cannot be used for mixin");
+        }
+		ConfigResource resource = path.getResource();
+        Element e = resource.createElement();
+    	resolveMixin(e, base, resource.pathContext());
+        return e;
     }
 
     private Element getPrototype(ConfigPath path) {
@@ -139,9 +145,6 @@ public class ExtendXML {
 		}
     }
 
-    private boolean isDeepExtendPoint(String path) {
-    	return EXTEND_HERE_REFERENCE.equals(path);
-    }
     private void inherit(Element e, Element proto, PathContext pc) {
         Document doc = e.getOwnerDocument();
         Map<String, Element> elemMap =
@@ -172,7 +175,7 @@ public class ExtendXML {
         		elemList.remove(cDst);
                 boolean deep = resolveInheritance(cDst, pc);
                 if (deep) {
-                    cDst.removeAttribute(ConfigDescription.ATTR_EXTENDS);
+                	ExtendPath.remove(cDst);
                 	inherit(cDst, cSrc, pc);
                 } else {
                 	inheritAttrs(cDst, cSrc);

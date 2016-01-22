@@ -55,6 +55,11 @@ public class ExtendXMLTest {
 		successCases("extenddirs");
 	}
 
+	@Test
+	public void testExtendsWithMixin() {
+		successCases("extendmixin");
+	}
+
 	private void successCases(String name) {
 		for (Element e : set.testSet(name)) {
 			Element t = XML.getSingleElement("test", e);

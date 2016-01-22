@@ -1,0 +1,74 @@
+<Tests>
+	<Test name="extendWithMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><b>3</b><c>4</c></b>
+	  </repo>
+	  <test extends="a;b">
+	     <a>5</a>
+	     <d>6</d>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>3</b>
+	    <c>4</c>
+	    <d>6</d>
+	  </success>
+	</Test>
+	<Test name="extendWithCascadningMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b extends="c"><b>3</b></b>
+	    <c><c>4</c></c>
+	  </repo>
+	  <test extends="a;b">
+	     <a>5</a>
+	     <d>6</d>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>3</b>
+	    <c>4</c>
+	    <d>6</d>
+	  </success>
+	</Test>
+	<Test name="extendWithDeepMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b><c><c>3</c></c></a>
+	    <b>
+	      <b>3</b>
+	      <c extends=".">
+	        <d>4</d>
+	      </c>
+	    </b>
+	  </repo>
+	  <test extends="a;b">
+	     <a>5</a>
+	     <d>6</d>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>3</b>
+	    <c><c>3</c><d>4</d></c>
+	    <d>6</d>
+	  </success>
+	</Test>
+	<Test name="multiMixin">
+	  <repo>
+	    <a><a>1</a><b>2</b></a>
+	    <b><b>3</b><e>7</e></b>
+	    <c><c>4</c></c>
+	  </repo>
+	  <test extends="a;b;c">
+	     <a>5</a>
+	     <d>6</d>
+	  </test>
+	  <success>
+	    <a>5</a>
+	    <b>3</b>
+	    <e>7</e>
+	    <c>4</c>
+	    <d>6</d>
+	  </success>
+	</Test>
+</Tests>
