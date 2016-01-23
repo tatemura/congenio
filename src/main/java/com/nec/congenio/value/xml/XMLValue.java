@@ -177,21 +177,32 @@ public class XMLValue extends AbstractValue implements ConfigValue {
     	return guessType(root);
     }
 
+	public static boolean isPrimitiveType(String typeName) {
+		Type type = typeOf(typeName);
+		return (type != Type.ARRAY && type != Type.OBJECT);
+	}
+	public static boolean isPrimitiveType(Type type) {
+		return (type != Type.ARRAY && type != Type.OBJECT);
+	}
+
+	public static Type typeOf(String typeName) {
+		try {
+			return Type.valueOf(typeName.trim().toUpperCase());
+		} catch (IllegalArgumentException ex) {
+			/**
+			 * Note: type does not match with the Type.
+			 * ("type" may be used by other purpose)
+			 * TODO use namespace to distinguish "type" attribute?
+			 *
+			 */
+			return null;
+		}
+	}
 	@Nullable
 	public static Type findType(Element e) {
 		String value = XML.getAttribute(Attrs.TYPE, e, null);
 		if (value != null) {
-			try {
-				return Type.valueOf(value.trim().toUpperCase());
-			} catch (IllegalArgumentException ex) {
-				/**
-				 * Note: type does not match with the Type.
-				 * ("type" may be used by other purpose)
-				 * TODO use namespace to distinguish "type" attribute?
-				 *
-				 */
-				return null;
-			}
+			return typeOf(value);
 		}
 		return null;
 	}

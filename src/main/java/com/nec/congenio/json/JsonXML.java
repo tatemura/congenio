@@ -106,7 +106,12 @@ public final class JsonXML {
 		 */
 		ExpXML exp = ExpXML.findExp(e);
 		if (exp != null) {
-			return toJsonValue(type, exp.value());
+			PrimitiveValue v = exp.value();
+			if (type != null && XMLValue.isPrimitiveType(type)) {
+				return v.cast(type).toJson();
+			} else {
+				return v.toJson();
+			}
 		}
 		List<Element> elements = XML.getElements(e);
 		Map<String, String> attrs = Attrs.userAttrs(e);

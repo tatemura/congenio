@@ -1,0 +1,85 @@
+<Tests>
+  <!-- reference resolution and expression evaluation -->
+  <Test name="refTypeOverride">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b type="text" exp="concat('')" ref="a"/>
+      <c ref="b"/>
+      <d type="number" ref="b"/>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b type="text">12</b>
+      <c type="text">12</c>
+      <d type="number">12</d>
+    </success>
+  </Test>
+  <Test name="refTypeOverride2">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b type="number" exp="concat('')" ref="a"/>
+      <c ref="b"/>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b type="number">12</b>
+      <c type="number">12</c>
+    </success>
+  </Test>
+  <Test name="refTypeConvert">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b exp="concat('')" ref="a"/>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b>12</b>
+    </success>
+  </Test>
+  <Test name="refTypeSumConvert">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b exp="+" ref="a"/>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b>3</b>
+    </success>
+  </Test>
+  <Test name="refTypeConvertAndToJson">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b exp="jsondump">
+        <value exp="concat('')" ref="a"/>
+      </b>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b>{"value":"12"}</b>
+    </success>
+  </Test>
+  <Test name="refTypeOverrideTextAndToJson">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b exp="jsondump">
+        <value type="text" exp="concat('')" ref="a"/>
+      </b>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b>{"value":"12"}</b>
+    </success>
+  </Test>
+  <Test name="refTypeOverrideNumberAndToJson">
+    <test>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b exp="jsondump">
+        <value type="number" exp="concat('')" ref="a"/>
+      </b>
+    </test>
+    <success>
+      <a type="array"><e>1</e><e>2</e></a>
+      <b>{"value":12}</b>
+    </success>
+  </Test>
+</Tests>

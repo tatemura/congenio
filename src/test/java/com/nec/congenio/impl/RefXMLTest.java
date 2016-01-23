@@ -49,5 +49,14 @@ public class RefXMLTest {
 		}
 	}
 
+	@Test
+	public void testRefAndExp() {
+		for (Element e : TestDataUtil.tests("refxml/refexp")) {
+			Element t = XML.getSingleElement("test", e);
+			Element r = XML.getSingleElement("success", e);
+			XMLValueUtil.assertEq(r,
+					ExpXML.evaluate(RefXML.resolve(t)));
+		}
+	}
 
 }

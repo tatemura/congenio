@@ -71,4 +71,24 @@
       <c><a><c>2</c></a><d>1</d><e>2</e></c>
     </success>
   </Test>
+  <Test name="refType">
+    <test>
+      <a type="number">1</a>
+      <b ref="a"/>
+    </test>
+    <success>
+      <a type="number">1</a>
+      <b type="number">1</b>
+    </success>
+  </Test>
+  <Test name="refTypeOverride">
+    <test>
+      <a type="number">1</a>
+      <b type="text" ref="a"/>
+    </test>
+    <success>
+      <a type="number">1</a>
+      <b type="text">1</b>
+    </success>
+  </Test>
 </Tests>

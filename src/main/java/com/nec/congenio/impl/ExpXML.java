@@ -148,7 +148,13 @@ public abstract class ExpXML {
         	for (String attr : Attrs.VALUE_ATTRS) {
             	String value = XML.getAttribute(attr, e, null);
             	if (value != null) {
-            		result.setAttribute(attr, value);
+            		if (Attrs.TYPE.equals(attr)) {
+            			if (XMLValue.isPrimitiveType(value)) {
+                    		result.setAttribute(attr, value);
+            			}
+            		} else {
+                		result.setAttribute(attr, value);
+            		}
             	}
         	}
 			return result;
