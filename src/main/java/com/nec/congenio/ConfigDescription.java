@@ -16,7 +16,6 @@
 package com.nec.congenio;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -31,7 +30,7 @@ import com.nec.congenio.json.JsonValueUtil;
 
 public abstract class ConfigDescription {
 	public static final String[] SUFFIXES = {
-		"xml", "cdl"
+		"xml", "json"
 	};
 	public static final String ATTR_EXTENDS = "extends";
 	public static final String ATTR_REF = "ref";
@@ -43,35 +42,20 @@ public abstract class ConfigDescription {
 		return create(file).evaluate();
 	}
     public static ConfigDescription create(File file) {
-    	try {
-			return create(file, congenProperties());
-		} catch (IOException e) {
-			throw new ConfigException(
-					"IOException reading properties", e);
-		}
+    	return create(file, congenProperties());
     }	
     public static ConfigDescription create(File file, Properties props) {
         return new ConfigFactory(props).create(file);
     }
     public static ConfigDescription create(Class<?> cls, String name) {
-    	try {
-			return create(cls, name, congenProperties());
-		} catch (IOException e) {
-			throw new ConfigException(
-					"IOException reading properties", e);
-		}
+    	return create(cls, name, congenProperties());
     }
 
     public static ConfigDescription create(Class<?> cls, String name, Properties props) {
     	return new ConfigFactory(props).create(cls, name);
     }
     public static ConfigDescription create(File file, ConfigDescription base) {
-    	try {
-			return create(file, base, congenProperties());
-		} catch (IOException e) {
-			throw new ConfigException(
-					"IOException reading properties", e);
-		}
+    	return create(file, base, congenProperties());
     }
     public static ConfigDescription create(File file, ConfigDescription base, Properties props) {
     	return new ConfigFactory(props).create(file, base);
@@ -122,16 +106,15 @@ public abstract class ConfigDescription {
     public static final String PROP_IDX = "cdl.doc.idx";
     public static final String PROP_PATH = "cdl.doc.path";
 
-    public static final String PROP_FILE = "congen.properties";
-    public static final String CONGEN_DIR = ".congen";
-
+ 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.err.println("arg: filename");
             return;
         }
-        Properties prop = congenProperties();
-    	ConfigDescription cdl = ConfigDescription.create(new File(args[0]),
+        File file = new File(args[0]);
+        Properties prop = congenProperties(file);
+    	ConfigDescription cdl = ConfigDescription.create(file,
     			prop);
         if (EXTEND_ONLY.equals(System.getProperty(PROP_MODE))) {
         	OutputStreamWriter w = new OutputStreamWriter(System.out);
@@ -167,32 +150,15 @@ public abstract class ConfigDescription {
         	}
         }
     }
-    static Properties congenProperties() throws IOException {
+    static Properties congenProperties() {
     	Properties sys = System.getProperties();
-		Properties prop = new Properties();
-		for (String f : new String[] {
-				PROP_FILE,
-				sys.getProperty("user.home") + "/"
-						+ CONGEN_DIR + "/" + PROP_FILE
-				}) {
-			if (loadProperties(prop, new File(f))) {
-				break;
-			}
-		}
-        prop.putAll(sys);
-        return prop;
+		Properties prop = ConfigProperties.getProperties();
+        return ConfigProperties.merge(prop, sys);
     }
-    static boolean loadProperties(Properties prop, File file) throws IOException {
-		if  (file.exists()) {
-			FileInputStream fis = new FileInputStream(file);
-			try {
-				prop.load(fis);
-				return true;
-			} finally {
-				fis.close();
-			}
-		}
-		return false;
+    static Properties congenProperties(File file) {
+    	Properties sys = System.getProperties();
+		Properties prop = ConfigProperties.getProperties(file.getParentFile());
+        return ConfigProperties.merge(prop, sys);
     }
     static void writeSeparator(int idx, Writer w) throws IOException {
     	if (idx > 0) {

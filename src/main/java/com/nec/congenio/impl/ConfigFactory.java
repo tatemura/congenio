@@ -25,25 +25,25 @@ import com.nec.congenio.ConfigException;
 import com.nec.congenio.impl.path.SearchPath;
 
 public class ConfigFactory {
-    private final SearchPath path;
+	private final Properties props;
     public ConfigFactory(Properties props) {
-    	path = SearchPath.create(props);
+    	this.props = props;
     }
 
     public XMLConfigDescription create(File file) {
     	if (file.exists()) {
-        	return create(path.toResource(file));
+        	return create(SearchPath.toResource(file, props));
     	} else {
     		throw new ConfigException("file not found: "
     				+ file.getAbsolutePath());
     	}
     }
     public XMLConfigDescription create(Class<?> cls, String resourcePath) {
-    	return create(path.toResource(cls, resourcePath));
+    	return create(SearchPath.create(props).toResource(cls, resourcePath));
     }
     public XMLConfigDescription create(File file, ConfigDescription base) {
     	if (file.exists()) {
-        	return create(path.toResource(file),
+        	return create(SearchPath.toResource(file, props),
         			(XMLConfigDescription) base);
     	} else {
     		throw new ConfigException("file not found: "
