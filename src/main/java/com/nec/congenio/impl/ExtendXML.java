@@ -103,12 +103,13 @@ public class ExtendXML {
         if (p == null) {
         	inherit(e, base, pc);
         } else {
+        	Element proto = getMixin(
+        			pc.interpret(p.getPath()), base);
         	for (String m : p.getMixins()) {
-                base = getMixin(pc.interpret(m), base);
+        		proto = getMixin(pc.interpret(m), proto);
         	}
-            ConfigPath path = pc.interpret(p.getPath());
         	ExtendPath.remove(e);
-        	inherit(e, getMixin(path, base), pc);
+        	inherit(e, proto, pc);
         }
     }
     private Element getMixin(ConfigPath path, Element base) {

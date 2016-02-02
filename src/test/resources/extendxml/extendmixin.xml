@@ -71,4 +71,39 @@
 	    <d>6</d>
 	  </success>
 	</Test>
+	<Test name="extendMixin">
+	  <repo>
+	    <base><b>b</b></base>
+	    <proto><p>p</p></proto>
+	    <mixin><m>m</m></mixin>
+	    <ex extends="proto;mixin"><e>e</e></ex>
+	  </repo>
+	  <test extends="ex">
+	    <t>t</t>
+	  </test>
+	  <success>
+	    <p>p</p>
+	    <m>m</m>
+	    <e>e</e>
+	    <t>t</t>
+	  </success>
+	</Test>
+	<Test name="cascadeMixin">
+	  <repo>
+	    <base><b>b</b></base>
+	    <proto><p>p</p></proto>
+	    <mixin><m>m</m></mixin>
+	    <ex extends="proto;mixin"><e>e</e></ex>
+	  </repo>
+	  <test extends="base;ex">
+	    <t>t</t>
+	  </test>
+	  <success>
+	    <b>b</b>
+	    <p>p</p>
+	    <m>m</m>
+	    <e>e</e>
+	    <t>t</t>
+	  </success>
+	</Test>
 </Tests>

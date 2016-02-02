@@ -42,7 +42,7 @@ public abstract class ConfigDescription {
 		return create(file).evaluate();
 	}
     public static ConfigDescription create(File file) {
-    	return create(file, congenProperties());
+    	return create(file, congenProperties(file));
     }	
     public static ConfigDescription create(File file, Properties props) {
         return new ConfigFactory(props).create(file);
@@ -55,7 +55,7 @@ public abstract class ConfigDescription {
     	return new ConfigFactory(props).create(cls, name);
     }
     public static ConfigDescription create(File file, ConfigDescription base) {
-    	return create(file, base, congenProperties());
+    	return create(file, base, congenProperties(file));
     }
     public static ConfigDescription create(File file, ConfigDescription base, Properties props) {
     	return new ConfigFactory(props).create(file, base);
@@ -105,17 +105,23 @@ public abstract class ConfigDescription {
     public static final String PROP_OUT = "cdl.output";
     public static final String PROP_IDX = "cdl.doc.idx";
     public static final String PROP_PATH = "cdl.doc.path";
-
+    public static final String PROP_BASE = "cdl.doc.base";
  
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
             System.err.println("arg: filename");
             return;
         }
+        String base = System.getProperty(PROP_BASE);
         File file = new File(args[0]);
-        Properties prop = congenProperties(file);
-    	ConfigDescription cdl = ConfigDescription.create(file,
-    			prop);
+    	ConfigDescription cdl;
+    	if (base != null) {
+    		cdl = ConfigDescription.create(file,
+    				ConfigDescription.create(new File(base)));
+    	} else {
+        	cdl = ConfigDescription.create(file);
+    	}
+
         if (EXTEND_ONLY.equals(System.getProperty(PROP_MODE))) {
         	OutputStreamWriter w = new OutputStreamWriter(System.out);
         	cdl.write(w, true);
