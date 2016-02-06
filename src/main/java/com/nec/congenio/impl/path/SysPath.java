@@ -27,6 +27,7 @@ import com.nec.congenio.impl.ConfigPath;
 import com.nec.congenio.impl.ConfigResource;
 import com.nec.congenio.impl.PathContext;
 import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.impl.path.sys.EnvFuncs;
 import com.nec.congenio.impl.path.sys.FuncModule;
 import com.nec.congenio.impl.path.sys.RandomFuncs;
 import com.nec.congenio.impl.path.sys.TimeFuncs;
@@ -45,7 +46,8 @@ public class SysPath {
 	}
 	static {
 		modules(new TimeFuncs(),
-				new RandomFuncs()
+				new RandomFuncs(),
+				new EnvFuncs()
 				);
 	}
 	private static final PathContext NO_PATH = new PathContext() {

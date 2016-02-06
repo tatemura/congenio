@@ -127,7 +127,7 @@ public class XMLValueBuilder implements ValueBuilder {
 	}
 
 	@Override
-	public ConfigValue build() {
+	public XMLValue build() {
 		return XMLValue.create(root);
 	}
 
