@@ -63,7 +63,7 @@ public class ExtendXMLTest {
 	private void successCases(String name) {
 		for (Element e : set.testSet(name)) {
 			Element t = XML.getSingleElement("test", e);
-			ExtendXML.resolve(t, set.createPathContext(e));
+			ExtendXML.resolve(t, set.createResource(e));
 			Element r = XML.getSingleElement("success", e);
 			XMLValueUtil.assertEq(r, t);
 		}

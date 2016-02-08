@@ -15,11 +15,12 @@
  *******************************************************************************/
 package com.nec.congenio.impl.path.sys;
 
-import org.w3c.dom.Element;
 
-import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.impl.EvalContext;
+import com.nec.congenio.ConfigValue;
+import com.nec.congenio.impl.Eval;
 
 public interface FuncModule {
 	String getName();
-	ValueFunc<Element> create(String call);
+	Eval<ConfigValue> create(String call, EvalContext ctxt);
 }

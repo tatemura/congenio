@@ -15,16 +15,6 @@
  *******************************************************************************/
 package com.nec.congenio.impl;
 
-public interface PathContext {
-
-	/**
-	 * Translates a path expression to
-	 * a path to a config resource.
-	 * @param pathExpr the path expression of
-	 * the configuration generation language.
-	 * @return a config path translated by this
-	 * provider.
-	 */
-	ConfigPath interpret(String pathExpr);
-
+public interface Eval<T> {
+	T getValue();
 }

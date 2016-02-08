@@ -31,34 +31,26 @@ import com.nec.congenio.xml.XML;
 
 public class ExtendXML {
 
-    private final Map<String, Element> map =
-            new HashMap<String, Element>();
+//    private final Map<String, Element> map =
+//            new HashMap<String, Element>();
 	/**
 	 * Resolves inheritance (extension) of a given subtree
 	 * of the document. Note that this is a destructive operation
 	 * to the data: The given subtree is modified into
 	 * the resolved subtree.
 	 * @param e the root of the subtree.
-	 * @param pc the path context to resolve the inheritance reference.
+	 * @param res resource.
 	 */
- 	public static void resolve(Element e, PathContext pc) {
-		new ExtendXML().resolveInheritance(e, pc);
+  	public static void resolve(Element e, ConfigResource res) {
+		new ExtendXML().resolveInheritance(e, EvalContext.create(res));
 	}
 
- 	public static void resolve(Element e, Element base, PathContext pc) {
- 		new ExtendXML().resolveMixin(e, base, pc);
+ 	public static void resolve(Element e, Element base, ConfigResource res) {
+ 		new ExtendXML().resolveMixin(e, base, EvalContext.create(res));
  	}
 
 	public static void inherit(Element e, Element proto) {
-		new ExtendXML().inherit(e, proto, new PathContext() {
-
-			@Override
-			public ConfigPath interpret(String pathExpr) {
-				throw new ConfigException(
-						"extension path is not allowed: " + pathExpr);
-			}
-			
-		});
+		new ExtendXML().inherit(e, proto, new EvalContext());
 	}
 
 	/**
@@ -69,12 +61,12 @@ public class ExtendXML {
 	 * @return true if this given subtree of the document
 	 * contains deep extension (i.e., extends=".").
 	 */
-    private boolean resolveInheritance(Element e, PathContext pc) {
+    private boolean resolveInheritance(Element e, EvalContext ctxt) {
     	ExtendPath p = ExtendPath.find(e);
         if (p == null) {
         	boolean deep = false;
             for (Element c : XML.getElements(e)) {
-                deep |= resolveInheritance(c, pc);
+                deep |= resolveInheritance(c, ctxt);
             }
             return deep;
         } else if (p.isDeepExtendPoint()) {
@@ -89,64 +81,60 @@ public class ExtendXML {
         	 */
         	return true;
         } 
-    	Element base = getPrototype(pc.interpret(p.getPath()));
+    	Element base = getPrototype(ctxt.of(p.getPath()));
     	for (String m : p.getMixins()) {
-            base = getMixin(pc.interpret(m), base);
+            base = getMixin(base, ctxt.of(m));
     	}
     	ExtendPath.remove(e);
-        inherit(e, base, pc);
+        inherit(e, base, ctxt);
         return false;
     }
 
-    private void resolveMixin(Element e, Element base, PathContext pc) {
+    private void resolveMixin(Element e, Element base, EvalContext ctxt) {
     	ExtendPath p = ExtendPath.find(e);
         if (p == null) {
-        	inherit(e, base, pc);
+        	inherit(e, base, ctxt);
         } else {
-        	Element proto = getMixin(
-        			pc.interpret(p.getPath()), base);
+        	Element proto = getMixin(base, ctxt.of(p.getPath()));
         	for (String m : p.getMixins()) {
-        		proto = getMixin(pc.interpret(m), proto);
+        		proto = getMixin(proto, ctxt.of(m));
         	}
         	ExtendPath.remove(e);
-        	inherit(e, proto, pc);
+        	inherit(e, proto, ctxt);
         }
     }
-    private Element getMixin(ConfigPath path, Element base) {
-        if (path.hasDocPath()) {
-			throw new ConfigException(
-			"path (" + path.getDocPath() + ") cannot be used for mixin");
-        }
-		ConfigResource resource = path.getResource();
-        Element e = resource.createElement();
-    	resolveMixin(e, base, resource.pathContext());
+
+    private Element getMixin(Element base, EvalContext ctxt) {
+    	ConfigResource resource = ctxt.getCurrentResource();
+    	Element e = resource.createElement();
+        e = resolveDocPath(e, ctxt);
+    	resolveMixin(e, base, ctxt);
         return e;
     }
 
-    private Element getPrototype(ConfigPath path) {
-    	String uri = path.getResourceURI();
-    	Element e = map.get(uri);
-		if (e == null) {
-			ConfigResource resource = path.getResource();
-            e = resource.createElement();
-        	resolveInheritance(e, resource.pathContext());
-        	map.put(uri, e);
-		}
-		if (path.hasDocPath()) {
-			Element sub = XML.getSingleElement(path.getDocPath(), e, false);
+    private Element getPrototype(EvalContext ctxt) {
+    	ConfigResource resource = ctxt.getCurrentResource();
+    	Element e = resource.createElement();
+    	resolveInheritance(e, ctxt);
+    	return resolveDocPath(e, ctxt);
+    }
+
+    private Element resolveDocPath(Element e, EvalContext ctxt) {
+ 		if (ctxt.hasDocPath()) {
+			Element sub = XML.getSingleElement(ctxt.getDocPath(), e, false);
 			if (sub != null) {
 				return sub;
 			} else {
+				ctxt.printResourceTrace();
 				throw new ConfigException(
-				"path (" + path.getDocPath() + ") not found in "
-				+ path.getResourceURI());
+				"path (" + ctxt.getDocPath() + ") not found");
 			}
 		} else {
 			return e;
 		}
     }
 
-    private void inherit(Element e, Element proto, PathContext pc) {
+    private void inherit(Element e, Element proto, EvalContext ctxt) {
         Document doc = e.getOwnerDocument();
         Map<String, Element> elemMap =
         		new HashMap<String, Element>();
@@ -174,10 +162,10 @@ public class ExtendXML {
         	if (elemMap.containsKey(name)) {
         		Element cDst = elemMap.remove(name);
         		elemList.remove(cDst);
-                boolean deep = resolveInheritance(cDst, pc);
+                boolean deep = resolveInheritance(cDst, ctxt);
                 if (deep) {
                 	ExtendPath.remove(cDst);
-                	inherit(cDst, cSrc, pc);
+                	inherit(cDst, cSrc, ctxt);
                 } else {
                 	inheritAttrs(cDst, cSrc);
                 }
@@ -187,7 +175,7 @@ public class ExtendXML {
             }
         }
         for (Element cExt : elemList) {
-            resolveInheritance(cExt, pc);
+            resolveInheritance(cExt, ctxt);
         	e.appendChild(cExt);
         }
         if (sources.isEmpty() && elemMap.isEmpty()) {

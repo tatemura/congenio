@@ -24,20 +24,22 @@ import javax.json.JsonObject;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigException;
+import com.nec.congenio.ConfigValue;
+import com.nec.congenio.impl.path.ResourceFinder;
 import com.nec.congenio.json.JsonValueUtil;
 import com.nec.congenio.json.JsonXML;
 import com.nec.congenio.xml.XML;
 
 public abstract class ConfigResource {
-	public static ConfigResource create(PathContext path, File file) {
+	public static ConfigResource create(ResourceFinder path, File file) {
 		return new FileConfigResource(path, file);
 	}
-	public static ConfigResource create(PathContext path, URL url) {
+	public static ConfigResource create(ResourceFinder path, URL url) {
 		return new URLConfigResource(path, url);
 	}
-	public static ConfigResource create(PathContext path, String uri,
-			ValueFunc<Element> value) {
-		return new ValueConfigResource(path, uri, value);
+	public static ConfigResource create(ResourceFinder path, String uri,
+			Eval<ConfigValue> value) {
+		return new ConfigValueResource(path, uri, value);
 	}
 	/**
 	 * Gets the content of the resource as an
@@ -48,11 +50,11 @@ public abstract class ConfigResource {
 	public abstract Element createElement();
 
 	/**
-	 * Gets the context (associated with this resource)
+	 * Gets the resource finder (associated with this resource)
 	 * that interprets a reference from this resource
 	 * to another.
 	 */
-	public abstract PathContext pathContext();
+	public abstract ResourceFinder getFinder();
 
 	/**
 	 * Gets the URI of the content (e.g. URL or file path).
@@ -61,8 +63,8 @@ public abstract class ConfigResource {
 
 	static class URLConfigResource extends ConfigResource {
 		private final URL url;
-		private final PathContext path;
-		public URLConfigResource(PathContext path, URL url) {
+		private final ResourceFinder path;
+		public URLConfigResource(ResourceFinder path, URL url) {
 			this.url = url;
 			this.path = path;
 		}
@@ -73,7 +75,7 @@ public abstract class ConfigResource {
 		}
 
 		@Override
-		public PathContext pathContext() {
+		public ResourceFinder getFinder() {
 			return path;
 		}
 
@@ -90,11 +92,12 @@ public abstract class ConfigResource {
 	}
 	static class FileConfigResource extends ConfigResource {
 		private final File file;
-		private final PathContext path;
-		public FileConfigResource(PathContext path, File file) {
+		private final ResourceFinder path;
+		public FileConfigResource(ResourceFinder path, File file) {
 			this.file = file;
 			this.path = path;
 		}
+		@Override
 		public Element createElement() {
 			if (isJsonFile()) {
 		    	JsonObject json = JsonValueUtil.parseObject(file);
@@ -102,7 +105,8 @@ public abstract class ConfigResource {
 			}
 			return XML.parse(file).getDocumentElement();
 		}
-		public PathContext pathContext() {
+		@Override
+		public ResourceFinder getFinder() {
 			return path;
 		}
 		@Override
@@ -112,24 +116,28 @@ public abstract class ConfigResource {
 	    boolean isJsonFile() {
 	    	return file.getPath().endsWith(".json");
 	    }
+	    public File getFile() {
+	    	return file;
+	    }
 	}
-	static class ValueConfigResource extends ConfigResource {
-		private final PathContext path;
+
+	static class ConfigValueResource extends ConfigResource {
+		private final ResourceFinder path;
 		private final String uri;
-		private final ValueFunc<Element> value;
-		public ValueConfigResource(PathContext path,
-				String uri, ValueFunc<Element> value) {
+		private final Eval<ConfigValue> value;
+		public ConfigValueResource(ResourceFinder path,
+				String uri, Eval<ConfigValue> value) {
 			this.path = path;
 			this.uri = uri;
 			this.value = value;
 		}
 		@Override
 		public Element createElement() {
-			return value.getValue();
+			return value.getValue().toXML("v");
 		}
 
 		@Override
-		public PathContext pathContext() {
+		public ResourceFinder getFinder() {
 			return path;
 		}
 

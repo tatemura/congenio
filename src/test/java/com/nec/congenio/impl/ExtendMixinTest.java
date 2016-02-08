@@ -33,9 +33,9 @@ public class ExtendMixinTest {
 		for (Element e : set.testSet(name)) {
 			Element t = XML.getSingleElement("test", e);
 			Element b = XML.getSingleElement("base", e);
-			PathContext pc = set.createPathContext(e);
-			ExtendXML.resolve(b, pc);
-			ExtendXML.resolve(t, b, pc);
+			ConfigResource res = set.createResource(e);
+			ExtendXML.resolve(b, res);
+			ExtendXML.resolve(t, b, res);
 			Element r = XML.getSingleElement("success", e);
 			XMLValueUtil.assertEq(r, t);
 		}

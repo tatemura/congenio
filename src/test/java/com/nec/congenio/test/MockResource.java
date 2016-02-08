@@ -18,13 +18,13 @@ package com.nec.congenio.test;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.impl.ConfigResource;
-import com.nec.congenio.impl.PathContext;
+import com.nec.congenio.impl.path.ResourceFinder;
 
 public class MockResource extends ConfigResource {
-	private final PathContext path;
+	private final ResourceFinder path;
 	private final String uri;
 	private final Element src;
-	public MockResource(PathContext path, String uri,
+	public MockResource(ResourceFinder path, String uri,
 			Element src) {
 		this.path = path;
 		this.uri = uri;
@@ -36,7 +36,7 @@ public class MockResource extends ConfigResource {
 	}
 
 	@Override
-	public PathContext pathContext() {
+	public ResourceFinder getFinder() {
 		return path;
 	}
 

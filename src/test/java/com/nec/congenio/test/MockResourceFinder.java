@@ -23,22 +23,21 @@ import javax.annotation.Nullable;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ConfigPath;
 import com.nec.congenio.impl.ConfigResource;
-import com.nec.congenio.impl.PathContext;
-import com.nec.congenio.impl.ResourcePointer;
+import com.nec.congenio.impl.EvalContext;
 import com.nec.congenio.impl.XMLValueUtil;
-import com.nec.congenio.impl.path.LibPathContext;
+import com.nec.congenio.impl.path.LibPath;
+import com.nec.congenio.impl.path.ResourceFinder;
 import com.nec.congenio.impl.path.PathExpression;
 import com.nec.congenio.xml.XML;
 
-public class MockPathContext implements PathContext {
+public class MockResourceFinder implements ResourceFinder {
 	private final Map<String, Element> repo =
 			new HashMap<String, Element>();
-	private final LibPathContext libp = new LibPathContext();
+	private final LibPath libp = new LibPath();
 
-	public static MockPathContext create(@Nullable Element root) {
-		MockPathContext path = new MockPathContext();
+	public static MockResourceFinder create(@Nullable Element root) {
+		MockResourceFinder path = new MockResourceFinder();
 		if (root != null) {
 			for (Element e : XML.getElements(root)) {
 				path.set(e.getTagName(), e);
@@ -47,31 +46,21 @@ public class MockPathContext implements PathContext {
 		return path;
 	}
 
-	public MockPathContext() {
+	public MockResourceFinder() {
 	}
 
 	public void set(String name, Element src) {
 		repo.put(name, src);
 	}
-	public void setLib(String name, PathContext ctxt) {
+	public void setLib(String name, ResourceFinder ctxt) {
 		libp.setPathContext(name, ctxt);
 	}
 
 	@Override
-	public ConfigPath interpret(String pathExpr) {
-		final PathExpression exp = PathExpression.parse(pathExpr);
-		return new ConfigPath(new ResourcePointer() {
-			@Override
-			public ConfigResource getResource() {
-				return get(exp);
-			}
-		},
-		exp.getDocPath());
-	}
-	private ConfigResource get(PathExpression exp) {
+	public ConfigResource getResource(PathExpression exp, EvalContext ctxt) {
 		String scheme = exp.getScheme();
 		if ("lib".equals(scheme)) {
-			return libp.getResource(exp);
+			return libp.getResource(exp, ctxt);
 		} else if (!scheme.isEmpty()) {
 			throw new ConfigException("scheme not supported: "
 					+ exp.getScheme());

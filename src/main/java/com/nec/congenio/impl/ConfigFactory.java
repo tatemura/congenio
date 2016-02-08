@@ -53,14 +53,14 @@ public class ConfigFactory {
 
     private XMLConfigDescription create(ConfigResource resource) {
     	Element e = resource.createElement();
-    	ExtendXML.resolve(e, resource.pathContext());
+    	ExtendXML.resolve(e, resource);
     	return new XMLConfigDescription(e);
     }
     private XMLConfigDescription create(ConfigResource resource,
     		XMLConfigDescription base) {
     	Element e = resource.createElement();
     	ExtendXML.resolve(e, base.getRoot(),
-    			resource.pathContext());
+    			resource);
     	return new XMLConfigDescription(e);
     }
 

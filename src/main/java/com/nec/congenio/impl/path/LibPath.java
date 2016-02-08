@@ -22,14 +22,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.ConfigProperties;
 import com.nec.congenio.impl.ConfigResource;
-import com.nec.congenio.impl.PathContext;
+import com.nec.congenio.impl.EvalContext;
 
-public class LibPathContext {
+public class LibPath implements ResourceFinder {
 	public static final String SCHEME = "lib";
 	private static final Pattern LIB = Pattern.compile("^(\\w+):(.*)$");
 	private static final Pattern LIB_DEF = Pattern.compile("^\\s*(\\w+)\\s*=\\s*(.*)$");
@@ -37,49 +35,46 @@ public class LibPathContext {
 	private static final int PATH = 2;
 	private static final int DEF_NAME = 1;
 	private static final int DEF_PATH = 2;
-	private final Map<String, PathContext> global;
-	private final Map<String, PathContext> effective =
-			new HashMap<String, PathContext>();
-	public LibPathContext() {
-		global = new HashMap<String, PathContext>();
+	private final Map<String, ResourceFinder> global;
+	private final Map<String, ResourceFinder> effective =
+			new HashMap<String, ResourceFinder>();
+	public LibPath() {
+		global = new HashMap<String, ResourceFinder>();
 	}
 
-	LibPathContext(Map<String, PathContext> global) {
+	LibPath(Map<String, ResourceFinder> global) {
 		this.global = global;
 		this.effective.putAll(global);
 	}
 
-	public LibPathContext contextAt(File dir) {
-		LibPathContext libp = new LibPathContext(global);
-		Map<String, PathContext> map = create(dir, this);
-		for (Map.Entry<String, PathContext> e : map.entrySet()) {
-			libp.setLocalPathContext(e.getKey(), e.getValue());
+	public LibPath libPathAt(File dir) {
+		LibPath libp = new LibPath(global);
+		Map<String, ResourceFinder> map = create(dir, this);
+		for (Map.Entry<String, ResourceFinder> e : map.entrySet()) {
+			libp.setLocalPath(e.getKey(), e.getValue());
 		}
 		return libp;
 	}
 
-	public void setPathContext(String libName, PathContext lib) {
+	public void setPathContext(String libName, ResourceFinder lib) {
 		global.put(libName, lib);
 		effective.put(libName, lib);
 	}
-	public void setLocalPathContext(String libName, PathContext lib) {
+	public void setLocalPath(String libName, ResourceFinder lib) {
 		if (!effective.containsKey(libName)) {
 			effective.put(libName, lib);
 		}
 	}
 
-	@Nullable
-	public PathContext getPathContext(String libName) {
-		return effective.get(libName);
-	}
-	public ConfigResource getResource(PathExpression exp) {
+	@Override
+	public ConfigResource getResource(PathExpression exp, EvalContext ctxt) {
 		Matcher m = LIB.matcher(exp.getPathPart());
 		if (m.matches()) {
 			String libName = m.group(NAME);
 			String path = m.group(PATH);
-			PathContext ctxt = effective.get(libName);
-			if (ctxt != null) {
-				return ctxt.interpret(path).getResource();
+			ResourceFinder finder = effective.get(libName);
+			if (finder != null) {
+				return finder.getResource(PathExpression.parse(path), ctxt);
 			} else {
 				throw new ConfigException("unknown lib: " + libName
 						+ " not in " + effective.keySet());
@@ -89,51 +84,51 @@ public class LibPathContext {
 					+ exp.getPathPart());
 		}
 	}
-	public static LibPathContext create(File baseDir) {
+	public static LibPath create(File baseDir) {
 		Properties props = ConfigProperties.getProperties(baseDir);
 		return create(baseDir, props);
 	}
 
-	public static LibPathContext create(File baseDir, Properties props) {
+	public static LibPath create(File baseDir, Properties props) {
 		String libdef = props.getProperty(ConfigProperties.PROP_LIBS);
 		if (libdef != null) {
 			return create(libdef, baseDir);
 		} else {
-			return new LibPathContext();
+			return new LibPath();
 		}
 	}
 
-	public static LibPathContext create(Properties props) {
+	public static LibPath create(Properties props) {
 		String libdef = props.getProperty(ConfigProperties.PROP_LIBS);
 		if (libdef != null) {
 			return create(libdef, new File("."));
 		} else {
-			return new LibPathContext();
+			return new LibPath();
 		}
 	}
 
-	public static LibPathContext create(String libPaths, File baseDir) {
-		LibPathContext lib = new LibPathContext();
-		Map<String, PathContext> map = create(libPaths, baseDir, lib);
-		for (Map.Entry<String, PathContext> e : map.entrySet()) {
+	public static LibPath create(String libPaths, File baseDir) {
+		LibPath lib = new LibPath();
+		Map<String, ResourceFinder> map = create(libPaths, baseDir, lib);
+		for (Map.Entry<String, ResourceFinder> e : map.entrySet()) {
 			lib.setPathContext(e.getKey(), e.getValue());
 		}
 		return lib;
 	}
 
-	private static Map<String, PathContext> create(File baseDir, LibPathContext lib) {
+	private static Map<String, ResourceFinder> create(File baseDir, LibPath lib) {
 		Properties props = ConfigProperties.getProperties(baseDir);
 		String libdef = props.getProperty(ConfigProperties.PROP_LIBS);
 		if (libdef != null) {
 			return create(libdef, baseDir, lib);
 		} else {
-			return new HashMap<String, PathContext>();
+			return new HashMap<String, ResourceFinder>();
 		}
 	}
 
-	private static Map<String, PathContext> create(String libPaths, File baseDir,
-			LibPathContext lib) {
-		Map<String, PathContext> map = new HashMap<String, PathContext>();
+	private static Map<String, ResourceFinder> create(String libPaths, File baseDir,
+			LibPath lib) {
+		Map<String, ResourceFinder> map = new HashMap<String, ResourceFinder>();
 		for (String def : libPaths.split(";")) {
 			def = def.trim();
 			if (!def.isEmpty()) {
@@ -142,7 +137,7 @@ public class LibPathContext {
 					String libName = m.group(DEF_NAME);
 					String path = m.group(DEF_PATH);
 					File dir = toFile(baseDir, path);
-					PathContext p = SearchPath.create(dir, lib);
+					ResourceFinder p = SearchPath.create(dir, lib);
 					map.put(libName, p);
 				} else {
 					throw new ConfigException("malformed lib definition: "

@@ -2,10 +2,10 @@ package com.nec.congenio.impl.path.sys;
 
 import java.util.Map;
 
-import org.w3c.dom.Element;
-
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.ConfigValue;
+import com.nec.congenio.impl.EvalContext;
+import com.nec.congenio.impl.Eval;
 import com.nec.congenio.value.PrimitiveValue;
 import com.nec.congenio.value.xml.XMLValueBuilder;
 
@@ -17,7 +17,7 @@ public class EnvFuncs implements FuncModule {
 	}
 
 	@Override
-	public ValueFunc<Element> create(String call) {
+	public Eval<ConfigValue> create(String call, EvalContext ctxt) {
 		if ("getenv".equals(call)) {
 			return envs();
 		} else if (call.startsWith("getenv/")) {
@@ -28,28 +28,28 @@ public class EnvFuncs implements FuncModule {
 				+ this.getName() + "): " + call);
 	}
 
-	ValueFunc<Element> envs() {
-		return new ValueFunc<Element>() {
+	Eval<ConfigValue> envs() {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				Map<String, String> env = System.getenv();
 				XMLValueBuilder b = XMLValueBuilder.create("env");
 				for (Map.Entry<String, String> e : env.entrySet()) {
 					b.add(e.getKey(), e.getValue());
 				}
-				return b.build().toXML();
+				return b.build();
 			}
 		};
 	}
-	ValueFunc<Element> getEnv(final String name) {
-		return new ValueFunc<Element>() {
+	Eval<ConfigValue> getEnv(final String name) {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				String value = System.getenv(name);
 				if (value != null) {
-					return PrimitiveValue.valueOf(value).toXML("v");
+					return PrimitiveValue.valueOf(value);
 				} else {
-					return PrimitiveValue.NULL.toXML("v");
+					return PrimitiveValue.NULL;
 				}
 			}
 		};

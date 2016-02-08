@@ -17,10 +17,10 @@ package com.nec.congenio.impl.path.sys;
 
 import java.util.Random;
 
-import org.w3c.dom.Element;
-
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.ConfigValue;
+import com.nec.congenio.impl.EvalContext;
+import com.nec.congenio.impl.Eval;
 import com.nec.congenio.value.PrimitiveValue;
 
 public class RandomFuncs implements FuncModule {
@@ -31,7 +31,7 @@ public class RandomFuncs implements FuncModule {
 	}
 
 	@Override
-	public ValueFunc<Element> create(String call) {
+	public Eval<ConfigValue> create(String call, EvalContext ctxt) {
 		if ("longValue".equals(call)) {
 			return longValue();
 		} else if ("intValue".equals(call)) {
@@ -40,21 +40,21 @@ public class RandomFuncs implements FuncModule {
 		throw new ConfigException("unknown sys call (sys:"
 				+ this.getName() + "): " + call);
 	}
-	ValueFunc<Element> longValue() {
-		return new ValueFunc<Element>() {
+	Eval<ConfigValue> longValue() {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				long value = new Random().nextLong();
-				return PrimitiveValue.valueOf(value).toXML("v");
+				return PrimitiveValue.valueOf(value);
 			}
 		};
 	}
-	ValueFunc<Element> intValue() {
-		return new ValueFunc<Element>() {
+	Eval<ConfigValue> intValue() {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				int value = new Random().nextInt();
-				return PrimitiveValue.valueOf(value).toXML("v");
+				return PrimitiveValue.valueOf(value);
 			}
 		};
 	}

@@ -20,19 +20,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.w3c.dom.Element;
-
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ConfigPath;
+import com.nec.congenio.ConfigValue;
 import com.nec.congenio.impl.ConfigResource;
-import com.nec.congenio.impl.PathContext;
-import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.impl.EvalContext;
+import com.nec.congenio.impl.Eval;
 import com.nec.congenio.impl.path.sys.EnvFuncs;
 import com.nec.congenio.impl.path.sys.FuncModule;
+import com.nec.congenio.impl.path.sys.PathFuncs;
 import com.nec.congenio.impl.path.sys.RandomFuncs;
 import com.nec.congenio.impl.path.sys.TimeFuncs;
 
-public class SysPath {
+public class SysPath implements ResourceFinder {
 	public static final String SCHEME = "sys";
 	private static final Pattern SYS = Pattern.compile("^(\\w+):(.*)$");
 	private static final int MODULE = 1;
@@ -47,12 +46,13 @@ public class SysPath {
 	static {
 		modules(new TimeFuncs(),
 				new RandomFuncs(),
-				new EnvFuncs()
+				new EnvFuncs(),
+				new PathFuncs()
 				);
 	}
-	private static final PathContext NO_PATH = new PathContext() {
+	private static final ResourceFinder NO_PATH = new ResourceFinder() {
 		@Override
-		public ConfigPath interpret(String pathExpr) {
+		public ConfigResource getResource(PathExpression pathExpr, EvalContext ctxt) {
 			throw new ConfigException("invalid context to interpret a path");
 		}
 	};
@@ -60,7 +60,8 @@ public class SysPath {
 	private Map<String, FuncModule> modules =
 			new HashMap<String, FuncModule>(DEFAULT_MODULES);
 
-	public ConfigResource getResource(PathExpression exp) {
+	@Override
+	public ConfigResource getResource(PathExpression exp, EvalContext ctxt) {
 		if (!SCHEME.equals(exp.getScheme())) {
 			throw new ConfigException("not a sys path: " + exp);
 		}
@@ -72,8 +73,8 @@ public class SysPath {
 			if (module == null) {
 				throw new ConfigException("unknown sys module: " + moduleName);
 			}
-			ValueFunc<Element> func = module.create(call);
-			return ConfigResource.create(NO_PATH, exp.toString(), func);
+			Eval<ConfigValue> val = module.create(call, ctxt);
+			return ConfigResource.create(NO_PATH, exp.toString(), val);
 		}
 		throw new ConfigException("malformed sys path: "
 				+ exp.getPathPart());

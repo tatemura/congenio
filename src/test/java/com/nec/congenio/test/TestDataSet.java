@@ -19,7 +19,8 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
-import com.nec.congenio.impl.PathContext;
+import com.nec.congenio.impl.ConfigResource;
+import com.nec.congenio.impl.path.ResourceFinder;
 import com.nec.congenio.impl.path.SearchPath;
 import com.nec.congenio.xml.XML;
 
@@ -31,14 +32,14 @@ public class TestDataSet {
 	public List<Element> testSet(String name) {
 		return TestDataUtil.tests(dirName + "/" + name);
 	}
-	public PathContext createPathContext(Element e) {
+	public ResourceFinder createPathContext(Element e) {
 		Element repo = XML.getSingleElement("repo", e, false);
 		boolean repoFound = repo != null;
-		MockPathContext path = (repoFound ? 
-				MockPathContext.create(repo) : new MockPathContext());
+		MockResourceFinder path = (repoFound ? 
+				MockResourceFinder.create(repo) : new MockResourceFinder());
 		for (Element l : XML.getElements("lib", e)) {
 			repoFound = true;
-			MockPathContext lib = MockPathContext.create(l);
+			MockResourceFinder lib = MockResourceFinder.create(l);
 			path.setLib(l.getAttribute("name"), lib);
 		}
 		if (repoFound) {
@@ -50,5 +51,31 @@ public class TestDataSet {
 					libs.getTextContent().trim());
 		}
 		return SearchPath.create(TestDataUtil.getFile(dirName));
+	}
+	public MockResource createResource(Element e) {
+		return new MockResource(e, createPathContext(e));
+	}
+	static class MockResource extends ConfigResource {
+		Element e;
+		ResourceFinder pc;
+		public MockResource(Element e, ResourceFinder pc) {
+			this.e = e;
+			this.pc = pc;
+		}
+		@Override
+		public Element createElement() {
+			return (Element) e.cloneNode(true);
+		}
+
+		@Override
+		public ResourceFinder getFinder() {
+			return pc;
+		}
+
+		@Override
+		public String getURI() {
+			return "test";
+		}
+		
 	}
 }

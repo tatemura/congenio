@@ -26,37 +26,52 @@ import javax.annotation.Nullable;
 
 import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ConfigPath;
 import com.nec.congenio.impl.ConfigResource;
-import com.nec.congenio.impl.PathContext;
-import com.nec.congenio.impl.ResourcePointer;
+import com.nec.congenio.impl.EvalContext;
 
-public abstract class SearchPath implements PathContext {
+public abstract class SearchPath implements ResourceFinder {
 	public static SearchPath create(Properties props) {
-		LibPathContext libs = LibPathContext.create(props);
+		LibPath libs = LibPath.create(props);
 		return new NoPath(libs);
 	}
 
-	public static PathContext create(Class<?> cls, String prefix) {
-		return new ResourceSearchPath(cls, prefix, new LibPathContext());
+	public static ResourceFinder create(Class<?> cls, String prefix) {
+		return new ResourceSearchPath(cls, prefix, new LibPath());
 	}
 
-	private final LibPathContext libp;
+	private final LibPath libp;
 	private final SysPath sysp = new SysPath();
 
-	public SearchPath(LibPathContext libp) {
+	public SearchPath(LibPath libp) {
 		this.libp = libp;
 	}
 
-	protected LibPathContext libPath() {
+	protected LibPath libPath() {
 		return libp;
 	}
 
 	@Override
-	public ConfigPath interpret(String pathExpr) {
-		PathExpression exp = PathExpression.parse(pathExpr);
-		ResourcePointer rp = new ResourcePointerImpl(this, exp);
-		return new ConfigPath(rp, exp.getDocPath());
+	public ConfigResource getResource(PathExpression exp, EvalContext ctxt) {
+		String scheme = exp.getScheme();
+		if (LibPath.SCHEME.equals(scheme)) {
+			return libp.getResource(exp, ctxt);
+		} else if (SysPath.SCHEME.equals(scheme)) {
+			return sysp.getResource(exp, ctxt);
+		} else if (!scheme.isEmpty()) {
+			throw new ConfigException("unsupported path scheme: "
+					+ scheme);
+		}
+		String name = exp.getPathPart();
+		ConfigResource res = findResource(name);
+		if (res != null) {
+			return res;
+		}
+		List<String> descs = getDescription();
+		String desc = descs.size() == 1 ? descs.get(0) : descs.toString();
+        throw new ConfigException("Not found: "
+    	        + name + "(."
+    	        + Arrays.toString(ConfigDescription.SUFFIXES)
+    	        + ") @ " + desc);
 	}
 
 	public static ConfigResource toResource(File file, Properties props) {
@@ -65,7 +80,7 @@ public abstract class SearchPath implements PathContext {
 		 * (= ".")
 		 */
 		File dir = file.getParentFile();
-		LibPathContext libs = LibPathContext.create(dir, props);
+		LibPath libs = LibPath.create(dir, props);
 
 		return ConfigResource.create(new FileSearchPath(dir,
 						libs), file);
@@ -87,46 +102,24 @@ public abstract class SearchPath implements PathContext {
 				new ResourceSearchPath(cls, prefix, libp), url);
 	}
 
-	public static PathContext create(File dir, String libdef) {
+	public static ResourceFinder create(File dir, String libdef) {
 		File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
-		LibPathContext libp = LibPathContext.create(libdef, baseDir);
+		LibPath libp = LibPath.create(libdef, baseDir);
 		return new FileSearchPath(baseDir, libp);
 		
 	}
-	public static PathContext create(File dir, LibPathContext libp) {
+	public static ResourceFinder create(File dir, LibPath libp) {
 		File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
 		return new FileSearchPath(baseDir, libp);
 	}
 
-	public static PathContext create(File dir) {
-		return create(dir, new LibPathContext());
+	public static ResourceFinder create(File dir) {
+		return create(dir, new LibPath());
 	}
 
 	@Nullable
 	public abstract ConfigResource findResource(String name);
 
-	private ConfigResource getResource(PathExpression exp) {
-		String scheme = exp.getScheme();
-		if (LibPathContext.SCHEME.equals(scheme)) {
-			return libp.getResource(exp);
-		} else if (SysPath.SCHEME.equals(scheme)) {
-			return sysp.getResource(exp);
-		} else if (!scheme.isEmpty()) {
-			throw new ConfigException("unsupported path scheme: "
-					+ scheme);
-		}
-		String name = exp.getPathPart();
-		ConfigResource res = findResource(name);
-		if (res != null) {
-			return res;
-		}
-		List<String> descs = getDescription();
-		String desc = descs.size() == 1 ? descs.get(0) : descs.toString();
-        throw new ConfigException("Not found: "
-    	        + name + "(."
-    	        + Arrays.toString(ConfigDescription.SUFFIXES)
-    	        + ") @ " + desc);
-	}
 
 	public List<String> getDescription() {
 		List<String> desc = new ArrayList<String>();
@@ -139,7 +132,7 @@ public abstract class SearchPath implements PathContext {
 
 	public static class NoPath extends SearchPath {
 
-		public NoPath(LibPathContext libp) {
+		public NoPath(LibPath libp) {
 			super(libp);
 		}
 
@@ -157,7 +150,7 @@ public abstract class SearchPath implements PathContext {
 		private final String prefix;
 
 		public ResourceSearchPath(Class<?> cls, String prefix,
-				LibPathContext libp) {
+				LibPath libp) {
 			super(libp);
 			this.cls = cls;
 			this.prefix = prefix;
@@ -191,15 +184,15 @@ public abstract class SearchPath implements PathContext {
 		@Nullable
 		private final File parent;
 
-		public FileSearchPath(@Nullable File path, LibPathContext libp) {
+		public FileSearchPath(@Nullable File path, LibPath libp) {
 			super(libp);
 			this.parent = path;
 		}
 
 
-		protected PathContext contextOf(File dir) {
+		protected ResourceFinder contextOf(File dir) {
 			return new FileSearchPath(dir,
-					libPath().contextAt(dir));
+					libPath().libPathAt(dir));
 		}
 		@Override
 		public ConfigResource findResource(String name) {
@@ -250,16 +243,5 @@ public abstract class SearchPath implements PathContext {
 			return null;
 		}
 	}
-	static class ResourcePointerImpl implements ResourcePointer {
-		private final SearchPath sp;
-		private final PathExpression exp;
-		public ResourcePointerImpl(SearchPath sp, PathExpression exp) {
-			this.sp = sp;
-			this.exp = exp;
-		}
-		@Override
-		public ConfigResource getResource() {
-			return sp.getResource(exp);
-		}
-	}
+
 }

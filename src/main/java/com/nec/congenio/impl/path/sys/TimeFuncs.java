@@ -19,10 +19,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.w3c.dom.Element;
-
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.ValueFunc;
+import com.nec.congenio.ConfigValue;
+import com.nec.congenio.impl.EvalContext;
+import com.nec.congenio.impl.Eval;
 import com.nec.congenio.value.PrimitiveValue;
 
 public class TimeFuncs implements FuncModule {
@@ -33,7 +33,7 @@ public class TimeFuncs implements FuncModule {
 	}
 
 	@Override
-	public ValueFunc<Element> create(String call) {
+	public Eval<ConfigValue> create(String call, EvalContext ctxt) {
 		if ("longValue".equals(call)) {
 			return longValue();
 		} else if ("dateTime".equals(call)) {
@@ -45,22 +45,22 @@ public class TimeFuncs implements FuncModule {
 		throw new ConfigException("unknown sys call (sys:"
 				+ this.getName() + "): " + call);
 	}
-	ValueFunc<Element> longValue() {
-		return new ValueFunc<Element>() {
+	Eval<ConfigValue> longValue() {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				long value = new Date().getTime();
-				return PrimitiveValue.valueOf(value).toXML("v");
+				return PrimitiveValue.valueOf(value);
 			}
 		};
 	}
-	ValueFunc<Element> timeFunc(String arg) {
+	Eval<ConfigValue> timeFunc(String arg) {
 		final DateFormat format = format(arg);
-		return new ValueFunc<Element>() {
+		return new Eval<ConfigValue>() {
 			@Override
-			public Element getValue() {
+			public ConfigValue getValue() {
 				String value = format.format(new Date());
-				return PrimitiveValue.valueOf(value).toXML("v");
+				return PrimitiveValue.valueOf(value);
 			}
 		};
 	}
