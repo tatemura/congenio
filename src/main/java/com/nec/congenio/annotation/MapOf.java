@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.annotation;
 
 import java.lang.annotation.ElementType;
@@ -21,22 +22,27 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the class is populated with
- * Map&lt;String,T> where T is the value specified by
- * this annotation. 
+ * Indicates that the class is populated with Map&lt;String,T> where T is the
+ * value specified by this annotation.
  * <ul>
- * <li> When set at the type (class), an instance can be
- * generated from ConfigValue. The class must have a constructor with
- * Map&lt;String,T> in order to get the converted data.
- * <li> TODO When set at the method, a ConfigValue can be generated
- * from an instance of this class. The annotated method
- * must return Map&lt;String,T&gt; and must not have arguments.
+ * <li>When set at the type (class), an instance can be generated from
+ * ConfigValue. The class must have a constructor with Map&lt;String,T> in order
+ * to get the converted data.
+ * <li>TODO When set at the method, a ConfigValue can be generated from an
+ * instance of this class. The annotated method must return Map&lt;String,T&gt;
+ * and must not have arguments.
  * </ul>
+ * 
  * @author tatemura
  *
  */
-@Target({ElementType.TYPE})
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MapOf {
-	Class<?> value();
+    /**
+     * Gets the class of objects that are stored
+     * as values in the map.
+     * @return the class of value objects.
+     */
+    Class<?> value();
 }

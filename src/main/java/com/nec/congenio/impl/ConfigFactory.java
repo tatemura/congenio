@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl;
 
 import java.io.File;
@@ -25,43 +26,55 @@ import com.nec.congenio.ConfigException;
 import com.nec.congenio.impl.path.SearchPath;
 
 public class ConfigFactory {
-	private final Properties props;
+    private final Properties props;
+
     public ConfigFactory(Properties props) {
-    	this.props = props;
+        this.props = props;
     }
 
-    public XMLConfigDescription create(File file) {
-    	if (file.exists()) {
-        	return create(SearchPath.toResource(file, props));
-    	} else {
-    		throw new ConfigException("file not found: "
-    				+ file.getAbsolutePath());
-    	}
-    }
-    public XMLConfigDescription create(Class<?> cls, String resourcePath) {
-    	return create(SearchPath.create(props).toResource(cls, resourcePath));
-    }
-    public XMLConfigDescription create(File file, ConfigDescription base) {
-    	if (file.exists()) {
-        	return create(SearchPath.toResource(file, props),
-        			(XMLConfigDescription) base);
-    	} else {
-    		throw new ConfigException("file not found: "
-    				+ file.getAbsolutePath());
-    	}
+    /**
+     * Creates a config description from a given file.
+     * @param file a file that contains config description.
+     * @return a created description.
+     */
+    public XmlConfigDescription create(File file) {
+        if (file.exists()) {
+            return create(SearchPath.toResource(file, props));
+        } else {
+            throw new ConfigException("file not found: " + file.getAbsolutePath());
+        }
     }
 
-    private XMLConfigDescription create(ConfigResource resource) {
-    	Element e = resource.createElement();
-    	ExtendXML.resolve(e, resource);
-    	return new XMLConfigDescription(e);
+    public XmlConfigDescription create(Class<?> cls, String resourcePath) {
+        return create(SearchPath.create(props).toResource(cls, resourcePath));
     }
-    private XMLConfigDescription create(ConfigResource resource,
-    		XMLConfigDescription base) {
-    	Element e = resource.createElement();
-    	ExtendXML.resolve(e, base.getRoot(),
-    			resource);
-    	return new XMLConfigDescription(e);
+
+    /**
+     * Creates a config description from a given file with a base
+     * configuration.
+     * @param file a file that contains a config description.
+     * @param base a base configuration that is extended by the
+     *        given description in the file.
+     * @return an extended description.
+     */
+    public XmlConfigDescription create(File file, ConfigDescription base) {
+        if (file.exists()) {
+            return create(SearchPath.toResource(file, props), (XmlConfigDescription) base);
+        } else {
+            throw new ConfigException("file not found: " + file.getAbsolutePath());
+        }
+    }
+
+    private XmlConfigDescription create(ConfigResource resource) {
+        Element elem = resource.createElement();
+        ExtendXml.resolve(elem, resource);
+        return new XmlConfigDescription(elem);
+    }
+
+    private XmlConfigDescription create(ConfigResource resource, XmlConfigDescription base) {
+        Element elem = resource.createElement();
+        ExtendXml.resolve(elem, base.getRoot(), resource);
+        return new XmlConfigDescription(elem);
     }
 
 }

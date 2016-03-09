@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package com.nec.congenio.impl.path.sys;
 
+package com.nec.congenio.impl.path.sys;
 
 import com.nec.congenio.impl.EvalContext;
 import com.nec.congenio.ConfigValue;
 import com.nec.congenio.impl.Eval;
 
 public interface FuncModule {
-	String getName();
-	Eval<ConfigValue> create(String call, EvalContext ctxt);
+    String getName();
+
+    Eval<ConfigValue> create(String call, EvalContext ctxt);
 }

@@ -19,27 +19,59 @@ package com.nec.congenio.impl;
 import org.junit.Test;
 import org.w3c.dom.Element;
 
+import com.nec.congenio.impl.ExtendXml;
 import com.nec.congenio.test.TestDataSet;
 import com.nec.congenio.xml.Xml;
 
-public class ExtendMixinTest {
+public class ExtendXmlTest {
     private TestDataSet set = new TestDataSet("extendxml");
 
     @Test
-    public void testMixin() {
-        successCases("mixin");
+    public void testSimpleExtends() {
+        successCases("extend");
+    }
+
+    @Test
+    public void testNamedExtends() {
+        successCases("extendname");
+    }
+
+    @Test
+    public void testDocPathExtends() {
+        successCases("docpath");
+    }
+
+    @Test
+    public void testDeepExtends() {
+        successCases("deep");
+    }
+
+    @Test
+    public void testExtendsWithAttrs() {
+        successCases("extend_attrs");
+    }
+
+    @Test
+    public void testLibExtends() {
+        successCases("lib");
+    }
+
+    @Test
+    public void testExtendsFromDir() {
+        successCases("extenddirs");
+    }
+
+    @Test
+    public void testExtendsWithMixin() {
+        successCases("extendmixin");
     }
 
     private void successCases(String name) {
         for (Element e : set.testSet(name)) {
             Element test = Xml.getSingleElement("test", e);
-            Element base = Xml.getSingleElement("base", e);
-            ConfigResource res = set.createResource(e);
-            ExtendXml.resolve(base, res);
-            ExtendXml.resolve(test, base, res);
-            Element expectedResult =
-                    Xml.getSingleElement("success", e);
-            XmlValueUtil.assertEq(expectedResult, test);
+            ExtendXml.resolve(test, set.createResource(e));
+            Element expected = Xml.getSingleElement("success", e);
+            XmlValueUtil.assertEq(expected, test);
         }
     }
 }

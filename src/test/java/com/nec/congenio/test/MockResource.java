@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.test;
 
 import org.w3c.dom.Element;
@@ -21,28 +22,36 @@ import com.nec.congenio.impl.ConfigResource;
 import com.nec.congenio.impl.path.ResourceFinder;
 
 public class MockResource extends ConfigResource {
-	private final ResourceFinder path;
-	private final String uri;
-	private final Element src;
-	public MockResource(ResourceFinder path, String uri,
-			Element src) {
-		this.path = path;
-		this.uri = uri;
-		this.src = src;
-	}
-	@Override
-	public Element createElement() {
-		return (Element) src.cloneNode(true);
-	}
+    private final ResourceFinder path;
+    private final String uri;
+    private final Element src;
 
-	@Override
-	public ResourceFinder getFinder() {
-		return path;
-	}
+    /**
+     * Creates a mock resource.
+     * @param path a finder used to locate a resource.
+     * @param uri a URI string that represents this resource.
+     * @param src a template from which an element is cloned as
+     *        the result of createElement
+     */
+    public MockResource(ResourceFinder path, String uri, Element src) {
+        this.path = path;
+        this.uri = uri;
+        this.src = src;
+    }
 
-	@Override
-	public String getURI() {
-		return uri;
-	}
-	
+    @Override
+    public Element createElement() {
+        return (Element) src.cloneNode(true);
+    }
+
+    @Override
+    public ResourceFinder getFinder() {
+        return path;
+    }
+
+    @Override
+    public String getUri() {
+        return uri;
+    }
+
 }

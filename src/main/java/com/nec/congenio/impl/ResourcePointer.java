@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl;
 
 public interface ResourcePointer {
-	/**
-	 * dereferences the pointer to a config
-	 * resource.
-	 * @return a config resource identified by
-	 * this pointer.
-	 * @throws ConfigException when the resource
-	 * does not exist
-	 */
-	ConfigResource getResource();
+    /**
+     * dereferences the pointer to a config resource.
+     * 
+     * @return a config resource identified by this pointer.
+     * @throws ConfigException
+     *             when the resource does not exist
+     */
+    ConfigResource getResource();
 }

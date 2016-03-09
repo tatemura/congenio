@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl;
 
 import java.io.File;
@@ -27,123 +28,134 @@ import com.nec.congenio.ConfigException;
 import com.nec.congenio.ConfigValue;
 import com.nec.congenio.impl.path.ResourceFinder;
 import com.nec.congenio.json.JsonValueUtil;
-import com.nec.congenio.json.JsonXML;
-import com.nec.congenio.xml.XML;
+import com.nec.congenio.json.JsonXml;
+import com.nec.congenio.xml.Xml;
 
 public abstract class ConfigResource {
-	public static ConfigResource create(ResourceFinder path, File file) {
-		return new FileConfigResource(path, file);
-	}
-	public static ConfigResource create(ResourceFinder path, URL url) {
-		return new URLConfigResource(path, url);
-	}
-	public static ConfigResource create(ResourceFinder path, String uri,
-			Eval<ConfigValue> value) {
-		return new ConfigValueResource(path, uri, value);
-	}
-	/**
-	 * Gets the content of the resource as an
-	 * XML element
-	 * @return the root element of
-	 * the content.
-	 */
-	public abstract Element createElement();
+    public static ConfigResource create(ResourceFinder path, File file) {
+        return new FileConfigResource(path, file);
+    }
 
-	/**
-	 * Gets the resource finder (associated with this resource)
-	 * that interprets a reference from this resource
-	 * to another.
-	 */
-	public abstract ResourceFinder getFinder();
+    public static ConfigResource create(ResourceFinder path, URL url) {
+        return new UrlConfigResource(path, url);
+    }
 
-	/**
-	 * Gets the URI of the content (e.g. URL or file path).
-	 */
-	public abstract String getURI();
+    public static ConfigResource create(ResourceFinder path,
+            String uri, Eval<ConfigValue> value) {
+        return new ConfigValueResource(path, uri, value);
+    }
 
-	static class URLConfigResource extends ConfigResource {
-		private final URL url;
-		private final ResourceFinder path;
-		public URLConfigResource(ResourceFinder path, URL url) {
-			this.url = url;
-			this.path = path;
-		}
-		@Override
-		public Element createElement() {
-			// TODO JSON files
-			return XML.parse(url).getDocumentElement();
-		}
+    /**
+     * Gets the content of the resource as an XML element
+     * 
+     * @return the root element of the content.
+     */
+    public abstract Element createElement();
 
-		@Override
-		public ResourceFinder getFinder() {
-			return path;
-		}
+    /**
+     * Gets the resource finder (associated with this resource) that interprets
+     * a reference from this resource to another.
+     */
+    public abstract ResourceFinder getFinder();
 
-		@Override
-		public String getURI() {
-			try {
-				return url.toURI().toString();
-			} catch (URISyntaxException e) {
-				throw new ConfigException("invalid URL:" + url,
-						e);
-			}
-		}
-		
-	}
-	static class FileConfigResource extends ConfigResource {
-		private final File file;
-		private final ResourceFinder path;
-		public FileConfigResource(ResourceFinder path, File file) {
-			this.file = file;
-			this.path = path;
-		}
-		@Override
-		public Element createElement() {
-			if (isJsonFile()) {
-		    	JsonObject json = JsonValueUtil.parseObject(file);
-				return JsonXML.toXML(json);
-			}
-			return XML.parse(file).getDocumentElement();
-		}
-		@Override
-		public ResourceFinder getFinder() {
-			return path;
-		}
-		@Override
-		public String getURI() {
-			return file.toURI().toString();
-		}
-	    boolean isJsonFile() {
-	    	return file.getPath().endsWith(".json");
-	    }
-	    public File getFile() {
-	    	return file;
-	    }
-	}
+    /**
+     * Gets the URI of the content (e.g. URL or file path).
+     */
+    public abstract String getUri();
 
-	static class ConfigValueResource extends ConfigResource {
-		private final ResourceFinder path;
-		private final String uri;
-		private final Eval<ConfigValue> value;
-		public ConfigValueResource(ResourceFinder path,
-				String uri, Eval<ConfigValue> value) {
-			this.path = path;
-			this.uri = uri;
-			this.value = value;
-		}
-		@Override
-		public Element createElement() {
-			return value.getValue().toXML("v");
-		}
+    static class UrlConfigResource extends ConfigResource {
+        private final URL url;
+        private final ResourceFinder path;
 
-		@Override
-		public ResourceFinder getFinder() {
-			return path;
-		}
+        public UrlConfigResource(ResourceFinder path, URL url) {
+            this.url = url;
+            this.path = path;
+        }
 
-		@Override
-		public String getURI() {
-			return uri;
-		}	
-	}
+        @Override
+        public Element createElement() {
+            // TODO JSON files
+            return Xml.parse(url).getDocumentElement();
+        }
+
+        @Override
+        public ResourceFinder getFinder() {
+            return path;
+        }
+
+        @Override
+        public String getUri() {
+            try {
+                return url.toURI().toString();
+            } catch (URISyntaxException ex) {
+                throw new ConfigException("invalid URL:" + url, ex);
+            }
+        }
+
+    }
+
+    static class FileConfigResource extends ConfigResource {
+        private final File file;
+        private final ResourceFinder path;
+
+        public FileConfigResource(ResourceFinder path, File file) {
+            this.file = file;
+            this.path = path;
+        }
+
+        @Override
+        public Element createElement() {
+            if (isJsonFile()) {
+                JsonObject json = JsonValueUtil.parseObject(file);
+                return JsonXml.toXml(json);
+            }
+            return Xml.parse(file).getDocumentElement();
+        }
+
+        @Override
+        public ResourceFinder getFinder() {
+            return path;
+        }
+
+        @Override
+        public String getUri() {
+            return file.toURI().toString();
+        }
+
+        boolean isJsonFile() {
+            return file.getPath().endsWith(".json");
+        }
+
+        public File getFile() {
+            return file;
+        }
+    }
+
+    static class ConfigValueResource extends ConfigResource {
+        private final ResourceFinder path;
+        private final String uri;
+        private final Eval<ConfigValue> value;
+
+        public ConfigValueResource(ResourceFinder path,
+                String uri, Eval<ConfigValue> value) {
+            this.path = path;
+            this.uri = uri;
+            this.value = value;
+        }
+
+        @Override
+        public Element createElement() {
+            return value.getValue().toXml("v");
+        }
+
+        @Override
+        public ResourceFinder getFinder() {
+            return path;
+        }
+
+        @Override
+        public String getUri() {
+            return uri;
+        }
+    }
 }

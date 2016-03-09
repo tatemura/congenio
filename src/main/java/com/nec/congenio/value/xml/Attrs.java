@@ -13,38 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.value.xml;
 
 import java.util.Map;
 
 import org.w3c.dom.Element;
 
-import com.nec.congenio.xml.XML;
+import com.nec.congenio.xml.Xml;
 
 /**
- * XML attributes for a CDGL value
+ * XML attributes for a CDGL value.
  *
  */
 public final class Attrs {
 
-	private Attrs() {
-	}
+    private Attrs() {
+    }
 
-	public static final String TYPE = "type";
-	public static final String NAME = "name";
-	public static final String VALUE = "value";
-	/**
-	 * Attributes used to represent a ConfigValue.
-	 */
-	public static final String[] VALUE_ATTRS = {
-		TYPE, NAME, VALUE,
-	};
+    public static final String TYPE = "type";
+    public static final String NAME = "name";
+    public static final String VALUE = "value";
+    /**
+     * Attributes used to represent a ConfigValue.
+     */
+    public static final String[] VALUE_ATTRS = { TYPE, NAME, VALUE, };
 
-	public static Map<String, String> userAttrs(Element e) {
-		Map<String,String> attrs= XML.getAttributes(e);
-		for (String a : Attrs.VALUE_ATTRS) {
-			attrs.remove(a);
-		}
-		return attrs;
-	}
+    /**
+     * Gets the attributes that are defined by the users,
+     * i.e., that are not reserved by the configuration
+     * generation language.
+     * @param elem the element where attributes are found.
+     * @return a map of attribute name and value.
+     */
+    public static Map<String, String> userAttrs(Element elem) {
+        Map<String, String> attrs = Xml.getAttributes(elem);
+        for (String a : Attrs.VALUE_ATTRS) {
+            attrs.remove(a);
+        }
+        return attrs;
+    }
 }

@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio;
 
-
 public enum Type {
-	OBJECT,
-	ARRAY,
-	NUMBER,
-	STRING,
-	BOOL,
-	NULL;
+    OBJECT, ARRAY, NUMBER, STRING, BOOL, NULL;
 
-	public String attr() {
-		return name().toLowerCase();
-	}
+    public String attr() {
+        return name().toLowerCase();
+    }
 }

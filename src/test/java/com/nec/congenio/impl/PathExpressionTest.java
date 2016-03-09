@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
@@ -23,23 +24,23 @@ import com.nec.congenio.impl.path.PathExpression;
 
 public class PathExpressionTest {
 
-	@Test
-	public void testRegularPath() {
-		PathExpression exp = PathExpression.parse("test/test#aaa");
-		assertEquals("", exp.getScheme());
-		assertEquals("test/test", exp.getPathPart());
-		assertEquals("aaa", exp.getDocPath());
-		PathExpression exp1 = PathExpression.parse("test/test");
-		assertEquals("", exp1.getScheme());
-		assertEquals("test/test", exp1.getPathPart());
-		assertEquals("", exp1.getDocPath());
-	}
+    @Test
+    public void testRegularPath() {
+        PathExpression exp = PathExpression.parse("test/test#aaa");
+        assertEquals("", exp.getScheme());
+        assertEquals("test/test", exp.getPathPart());
+        assertEquals("aaa", exp.getDocPath());
+        PathExpression exp1 = PathExpression.parse("test/test");
+        assertEquals("", exp1.getScheme());
+        assertEquals("test/test", exp1.getPathPart());
+        assertEquals("", exp1.getDocPath());
+    }
 
-	@Test
-	public void testLibPath() {
-		PathExpression exp = PathExpression.parse("lib:test:xxx/yyy#aaa");
-		assertEquals("lib", exp.getScheme());
-		assertEquals("test:xxx/yyy", exp.getPathPart());
-		assertEquals("aaa", exp.getDocPath());
-	}
+    @Test
+    public void testLibPath() {
+        PathExpression exp = PathExpression.parse("lib:test:xxx/yyy#aaa");
+        assertEquals("lib", exp.getScheme());
+        assertEquals("test:xxx/yyy", exp.getPathPart());
+        assertEquals("aaa", exp.getDocPath());
+    }
 }

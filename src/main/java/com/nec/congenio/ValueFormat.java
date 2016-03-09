@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio;
 
 import java.io.File;
@@ -22,14 +23,14 @@ import java.net.URL;
 
 public interface ValueFormat {
 
-	ConfigValue parse(String data);
+    ConfigValue parse(String data);
 
-	ConfigValue parse(URL url);
+    ConfigValue parse(URL url);
 
-	ConfigValue parse(File file);
+    ConfigValue parse(File file);
 
-	ConfigValue parse(InputStream instr);
+    ConfigValue parse(InputStream instr);
 
-	void write(ConfigValue conf, Writer writer, boolean indent);
+    void write(ConfigValue conf, Writer writer, boolean indent);
 
 }

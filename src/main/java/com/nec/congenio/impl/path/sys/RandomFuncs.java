@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl.path.sys;
 
 import java.util.Random;
@@ -25,37 +26,38 @@ import com.nec.congenio.value.PrimitiveValue;
 
 public class RandomFuncs implements FuncModule {
 
-	@Override
-	public String getName() {
-		return "random";
-	}
+    @Override
+    public String getName() {
+        return "random";
+    }
 
-	@Override
-	public Eval<ConfigValue> create(String call, EvalContext ctxt) {
-		if ("longValue".equals(call)) {
-			return longValue();
-		} else if ("intValue".equals(call)) {
-			return intValue();
-		}
-		throw new ConfigException("unknown sys call (sys:"
-				+ this.getName() + "): " + call);
-	}
-	Eval<ConfigValue> longValue() {
-		return new Eval<ConfigValue>() {
-			@Override
-			public ConfigValue getValue() {
-				long value = new Random().nextLong();
-				return PrimitiveValue.valueOf(value);
-			}
-		};
-	}
-	Eval<ConfigValue> intValue() {
-		return new Eval<ConfigValue>() {
-			@Override
-			public ConfigValue getValue() {
-				int value = new Random().nextInt();
-				return PrimitiveValue.valueOf(value);
-			}
-		};
-	}
+    @Override
+    public Eval<ConfigValue> create(String call, EvalContext ctxt) {
+        if ("longValue".equals(call)) {
+            return longValue();
+        } else if ("intValue".equals(call)) {
+            return intValue();
+        }
+        throw new ConfigException("unknown sys call (sys:" + this.getName() + "): " + call);
+    }
+
+    Eval<ConfigValue> longValue() {
+        return new Eval<ConfigValue>() {
+            @Override
+            public ConfigValue getValue() {
+                long value = new Random().nextLong();
+                return PrimitiveValue.valueOf(value);
+            }
+        };
+    }
+
+    Eval<ConfigValue> intValue() {
+        return new Eval<ConfigValue>() {
+            @Override
+            public ConfigValue getValue() {
+                int value = new Random().nextInt();
+                return PrimitiveValue.valueOf(value);
+            }
+        };
+    }
 }

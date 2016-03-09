@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.json;
 
 import static org.junit.Assert.assertEquals;
@@ -26,19 +27,19 @@ import org.junit.Test;
 
 public class JsonValueUtilTest {
 
-	@Test
-	public void parseTest() {
-		String jsonText = new StringBuilder()
-		.append("{")
-		.append("\"intval\": 10,")
-		.append("\"txtval\": \"10\",")
-		.append("\"intarry\": [0,1,2]")
-		.append("}   ")
-		.toString();
-		JsonValue v = JsonValueUtil.parse(jsonText);
-		assertEquals(ValueType.OBJECT, v.getValueType());
-		JsonObject obj = (JsonObject) v;
-		assertEquals(10, obj.getInt("intval"));
-		assertNotNull(obj.getJsonArray("intarry"));
-	}
+    @Test
+    public void parseTest() {
+        String jsonText = new StringBuilder()
+                .append("{")
+                .append("\"intval\": 10,")
+                .append("\"txtval\": \"10\",")
+                .append("\"intarry\": [0,1,2]")
+                .append("}   ").toString();
+ 
+        JsonValue val = JsonValueUtil.parse(jsonText);
+        assertEquals(ValueType.OBJECT, val.getValueType());
+        JsonObject obj = (JsonObject) val;
+        assertEquals(10, obj.getInt("intval"));
+        assertNotNull(obj.getJsonArray("intarry"));
+    }
 }

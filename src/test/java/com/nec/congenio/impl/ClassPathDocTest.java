@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
@@ -25,21 +26,23 @@ import com.nec.congenio.ConfigValue;
 
 public class ClassPathDocTest {
 
+    @Test
+    public void test() {
+        XmlConfigDescription conf =
+                new ConfigFactory(new Properties())
+                .create(ClassPathDocTest.class, "data");
+        ConfigValue val = conf.resolve();
+        assertEquals(1, val.getInt("a"));
+        assertEquals(2, val.getInt("b"));
+    }
 
-	@Test
-	public void test() {
-		XMLConfigDescription conf = new ConfigFactory(new Properties())
-			.create(ClassPathDocTest.class, "data");
-		ConfigValue v = conf.resolve();
-		assertEquals(1, v.getInt("a"));
-		assertEquals(2, v.getInt("b"));
-	}
-	@Test
-	public void testExtend() {
-		XMLConfigDescription conf = new ConfigFactory(new Properties())
-			.create(ClassPathDocTest.class, "data1");
-		ConfigValue v = conf.resolve();
-		assertEquals(3, v.getInt("a"));
-		assertEquals(2, v.getInt("b"));
-	}
+    @Test
+    public void testExtend() {
+        XmlConfigDescription conf =
+                new ConfigFactory(new Properties())
+                .create(ClassPathDocTest.class, "data1");
+        ConfigValue val = conf.resolve();
+        assertEquals(3, val.getInt("a"));
+        assertEquals(2, val.getInt("b"));
+    }
 }

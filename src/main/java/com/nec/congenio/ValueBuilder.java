@@ -13,33 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio;
 
 import java.util.Properties;
 
-
 public interface ValueBuilder {
 
+    ValueBuilder add(String name, String value);
 
-	ValueBuilder add(String name, String value);
+    ValueBuilder add(String name, Number value);
 
-	ValueBuilder add(String name, Number value);
+    ValueBuilder add(String name, boolean value);
 
-	ValueBuilder add(String name, boolean value);
+    ValueBuilder add(String name, ConfigValue value);
 
-	ValueBuilder add(String name, ConfigValue value);
+    ValueBuilder add(String name, ConfigValue[] value);
 
-	ValueBuilder add(String name, ConfigValue[] value);
+    ValueBuilder add(String name, ValueBuilder value);
 
-	ValueBuilder add(String name, ValueBuilder value);
+    ValueBuilder add(String name, Properties props);
 
-	ValueBuilder add(String name, Properties props);
+    ValueBuilder add(String name, Object value);
 
-	ValueBuilder add(String name, Object value);
+    String toXmlString();
 
-	String toXMLString();
+    String toJsonString();
 
-	String toJsonString();
-
-	ConfigValue build();
+    ConfigValue build();
 }

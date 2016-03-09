@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.value.xml;
 
 import java.io.File;
@@ -25,43 +26,43 @@ import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigValue;
 import com.nec.congenio.ValueFormat;
-import com.nec.congenio.xml.XML;
+import com.nec.congenio.xml.Xml;
 
-public class XMLValueFormat implements ValueFormat {
+public class XmlValueFormat implements ValueFormat {
 
-	@Override
-	public ConfigValue parse(String data) {
-		return create(XML.parse(data));
-	}
+    @Override
+    public ConfigValue parse(String data) {
+        return create(Xml.parse(data));
+    }
 
-	@Override
-	public ConfigValue parse(URL url) {
-		return create(XML.parse(url));
-	}
+    @Override
+    public ConfigValue parse(URL url) {
+        return create(Xml.parse(url));
+    }
 
-	@Override
-	public ConfigValue parse(File file) {
-		return create(XML.parse(file));
-	}
-	
-	@Override
-	public ConfigValue parse(InputStream instr) {
-		return create(XML.parse(instr));
-	}
+    @Override
+    public ConfigValue parse(File file) {
+        return create(Xml.parse(file));
+    }
 
-	private ConfigValue create(Document doc) {
-		return XMLValue.create(doc.getDocumentElement());
-	}
+    @Override
+    public ConfigValue parse(InputStream instr) {
+        return create(Xml.parse(instr));
+    }
 
-	@Override
+    private ConfigValue create(Document doc) {
+        return XmlValue.create(doc.getDocumentElement());
+    }
+
+    @Override
     public void write(ConfigValue conf, Writer writer, boolean indent) {
-		if (conf instanceof XMLValue) {
-	    	Element e = ((XMLValue) conf).toXML();
-	    	XML.write(e, writer, false, indent);
-		} else {
-			Element e = conf.toXML(conf.getName());
-	    	XML.write(e, writer, false, indent);
-		}
+        if (conf instanceof XmlValue) {
+            Element elem = ((XmlValue) conf).toXml();
+            Xml.write(elem, writer, false, indent);
+        } else {
+            Element elem = conf.toXml(conf.getName());
+            Xml.write(elem, writer, false, indent);
+        }
     }
 
 }

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
+
 package com.nec.congenio.impl.path;
 
 import com.nec.congenio.impl.ConfigResource;
@@ -20,15 +21,16 @@ import com.nec.congenio.impl.EvalContext;
 
 public interface ResourceFinder {
 
-	/**
-	 * Retrieves a config resource specified
-	 * with the given path expression.
-	 * @param pathExpr the path expression of
-	 * the configuration generation language.
-	 * @param ctxt evaluation context that represents
-	 * where this path expression is specified.
-	 * @return a config resource.
-	 */
-	ConfigResource getResource(PathExpression expr, EvalContext ctxt);
+    /**
+     * Retrieves a config resource specified with the given path expression.
+     * 
+     * @param expr
+     *            the path expression of the configuration generation language.
+     * @param ctxt
+     *            evaluation context that represents where this path expression
+     *            is specified.
+     * @return a config resource.
+     */
+    ConfigResource getResource(PathExpression expr, EvalContext ctxt);
 
 }
