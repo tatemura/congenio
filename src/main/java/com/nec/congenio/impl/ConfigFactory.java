@@ -23,7 +23,6 @@ import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
-import com.nec.congenio.impl.path.SearchPath;
 
 public class ConfigFactory {
     private final Properties props;
@@ -39,14 +38,14 @@ public class ConfigFactory {
      */
     public XmlConfigDescription create(File file) {
         if (file.exists()) {
-            return create(SearchPath.toResource(file, props));
+            return create(ConfigResource.create(file, props));
         } else {
             throw new ConfigException("file not found: " + file.getAbsolutePath());
         }
     }
 
     public XmlConfigDescription create(Class<?> cls, String resourcePath) {
-        return create(SearchPath.create(props).toResource(cls, resourcePath));
+        return create(ConfigResource.create(cls, resourcePath, props));
     }
 
     /**
@@ -59,7 +58,8 @@ public class ConfigFactory {
      */
     public XmlConfigDescription create(File file, ConfigDescription base) {
         if (file.exists()) {
-            return create(SearchPath.toResource(file, props), (XmlConfigDescription) base);
+            return create(ConfigResource.create(file, props),
+                    (XmlConfigDescription) base);
         } else {
             throw new ConfigException("file not found: " + file.getAbsolutePath());
         }
@@ -71,7 +71,8 @@ public class ConfigFactory {
         return new XmlConfigDescription(elem);
     }
 
-    private XmlConfigDescription create(ConfigResource resource, XmlConfigDescription base) {
+    private XmlConfigDescription create(ConfigResource resource,
+            XmlConfigDescription base) {
         Element elem = resource.createElement();
         ExtendXml.resolve(elem, base.getRoot(), resource);
         return new XmlConfigDescription(elem);

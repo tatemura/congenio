@@ -17,8 +17,12 @@
 package com.nec.congenio.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Properties;
 
 import javax.json.JsonObject;
 
@@ -26,12 +30,55 @@ import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.ConfigValue;
+import com.nec.congenio.Values;
 import com.nec.congenio.impl.path.ResourceFinder;
+import com.nec.congenio.impl.path.SearchPath;
 import com.nec.congenio.json.JsonValueUtil;
 import com.nec.congenio.json.JsonXml;
 import com.nec.congenio.xml.Xml;
 
 public abstract class ConfigResource {
+    public static final String JSON_SUFFIX = ".json";
+    public static final String PROPERTY_SUFFIX = ".properties";
+
+    /**
+     * Creates a resource in a class path.
+     * @param cls a class that is used to define class paths.
+     * @param path a search path.
+     * @param props properties to configure a resource.
+     * @return a config resource.
+     */
+    public static ConfigResource create(Class<?> cls,
+            String path, Properties props) {
+        URL url = cls.getResource(path);
+        if (url == null) {
+            url = cls.getResource(path + ".xml");
+        }
+        if (url == null) {
+            throw new ConfigException("resource not found: " + path);
+        }
+        String prefix = new File(path).getParent();
+        if (prefix == null) {
+            prefix = "";
+        }
+        return create(SearchPath.create(cls, prefix, props), url);
+    }
+
+    /**
+     * Creates a resource from a file.
+     * @param file the file used as a resource.
+     * @param props properties to configure resource.
+     * @return a config resource.
+     */
+    public static ConfigResource create(File file, Properties props) {
+        /**
+         * NOTE: file.getParentFile() can be null (= ".")
+         */
+        File dir = file.getParentFile();
+
+        return create(SearchPath.create(dir, props), file);
+    }
+
     public static ConfigResource create(ResourceFinder path, File file) {
         return new FileConfigResource(path, file);
     }
@@ -62,6 +109,7 @@ public abstract class ConfigResource {
      * Gets the URI of the content (e.g. URL or file path).
      */
     public abstract String getUri();
+
 
     static class UrlConfigResource extends ConfigResource {
         private final URL url;
@@ -108,6 +156,8 @@ public abstract class ConfigResource {
             if (isJsonFile()) {
                 JsonObject json = JsonValueUtil.parseObject(file);
                 return JsonXml.toXml(json);
+            } else if (isPropertyFile()) {
+                return getPropertyXml();
             }
             return Xml.parse(file).getDocumentElement();
         }
@@ -123,7 +173,25 @@ public abstract class ConfigResource {
         }
 
         boolean isJsonFile() {
-            return file.getPath().endsWith(".json");
+            return file.getPath().endsWith(JSON_SUFFIX);
+        }
+
+        boolean isPropertyFile() {
+            return file.getPath().endsWith(PROPERTY_SUFFIX);
+        }
+
+        private Element getPropertyXml() {
+            Properties props = new Properties();
+            try {
+                props.load(new FileInputStream(file));
+            } catch (FileNotFoundException ex) {
+                throw new ConfigException(
+                        "file not found: " + file);
+            } catch (IOException ex) {
+                throw new ConfigException(
+                      "failed to read properties: " + file, ex);
+            }
+            return Values.valueOf(props).toXml("properties");
         }
 
         public File getFile() {

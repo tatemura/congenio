@@ -29,7 +29,7 @@ import com.nec.congenio.impl.ConfigFactory;
 import com.nec.congenio.json.JsonValueUtil;
 
 public abstract class ConfigDescription {
-    public static final String[] SUFFIXES = { "xml", "json" };
+    public static final String[] SUFFIXES = { "xml", "json", "properties" };
     public static final String ATTR_EXTENDS = "extends";
     public static final String ATTR_REF = "ref";
 

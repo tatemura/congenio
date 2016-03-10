@@ -1,7 +1,7 @@
 Congenio: Configuration Generation Language
 ========================================================
 
-** This is a preview version (0.0.2) ** The current implementation
+** This is a preview version (0.0.X) ** The current implementation
 is just enough for our specific purposes. We will add some more missing
 pieces (with potentially incompatible changes) as well as documentation.
 We target Version 0.1.0 for public use.
@@ -60,65 +60,85 @@ TODO: Wiki will explain more on language features.
 ### Inheritance (@extends)
 Suppose you have a file jpa-mysql.xml:
 
-	<Database>
-	  <Name>test</Name>
-	  <Params>
+	<database>
+	  <name>test</name>
+	  <params>
 	    <property name="javax.persistence.jdbc.driver">
 	       com.mysql.jdbc.Driver
 	    </property>
 	    <property name="javax.persistence.jdbc.url">
 	       jdbc:mysql://localhost:3306
 	    </property>
-	  </Params>
-	</Database>
-The following XML will extend the jpa-mysql.xml with a new
+	  </params>
+	</database>
+Another document can refer to this document with an "extend"
+attribute to generate a modified version of the original document.
+For example, the following XML will extend the jpa-mysql.xml with a new
 name:
 
-	<Database extends="jpa-mysql">
-	    <Name>mydb</Name>
-	</Database>
-and resolved as
+	<database extends="jpa-mysql">
+	    <name>mydb</name>
+	</database>
+After resolution of inheritance the document will become as follows:
 
-	<Database>
-	  <Name>mydb</Name>
-	  <Params>
+	<database>
+	  <name>mydb</name>
+	  <params>
 	    <property name="javax.persistence.jdbc.driver">
 	       com.mysql.jdbc.Driver
 	    </property>
 	    <property name="javax.persistence.jdbc.url">
 	       jdbc:mysql://localhost:3306
 	    </property>
-	  </Params>
-	</Database>
+	  </params>
+	</database>
 
-You can extend values that are not direct children:
+A special extend reference "." can be used to
+extend values that are not direct children:
 
-	<Database extends="jpa-mysql">
-	    <Name>mydb</Name>
-	    <Params extends=".">
+	<database extends="jpa-mysql">
+	    <name>mydb</name>
+	    <params extends=".">
 	       <property name="javax.persistence.jdbc.url">
 	         jdbc:mysql://myserver.example.com:3306
 	       </property>
-	    </Params>
-	</Database>
+	    </params>
+	</database>
 ### Reference (@ref)
+A reference ("ref" attribute) is provided to refer to a value
+(subtree) within the same document. It is useful to describe
+configuration that comprise of multiple components that share
+the same values.
 
-	<Experiment>
-	   <dbUrl>jdbc:mysql://myserver.example.com:3306</dbUrl>
-	   <Database extends="jpa-mysql">
-	    <Name>mydb</Name>
-	    <Params extends=".">
+The following example is a configuration of an experiment that
+uses three components (database, workload, startup). Configuration
+of these components require the URL of the same database. The value
+of URL is described at one place (dbUrl) and these components
+use "ref" attributes that refer to it.
+
+	<experiment>
+	   <dbUrl>jdbc:mysql://localhost:3306</dbUrl>
+	   <database extends="jpa-mysql">
+	    <name>mydb</name>
+	    <params extends=".">
 	       <property name="javax.persistence.jdbc.url"
 	          ref="dbUrl"/>
-	    </Params>
-      </Database>
-      <Workload extends="my-workload">
-        <Database ref="Database"/>
-      </Workload>
-      <Startup extends="start-config">
+	    </params>
+      </database>
+      <workload extends="my-workload">
+        <database ref="Database"/>
+      </workload>
+      <startup extends="start-config">
         <db ref="dbUrl"/>
-      </Startup>
-    </Experiment>
+      </startup>
+    </experiment>
+
+Now, in order to run a modified experiment with a new
+database URL, a document can extend only one element:
+
+    <experiment extends="experiment-templ">
+       <dbUrl>jdbc:mysql://myserver.example.com:3306</dbUrl>
+    </experiment>
 
 ### Value expression (@exp)
 
@@ -128,6 +148,11 @@ You can extend values that are not direct children:
 	   <h ref="host"/>
 	   <h>:3306</h>
 	</property>
+
+### Document unfolding (foreach)
+A foreach element is used
+to create a series of experiments with slightly different
+parameters from one document. 
 
 Requirements
 ------------

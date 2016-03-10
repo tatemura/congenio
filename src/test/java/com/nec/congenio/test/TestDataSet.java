@@ -17,9 +17,11 @@
 package com.nec.congenio.test;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.w3c.dom.Element;
 
+import com.nec.congenio.ConfigProperties;
 import com.nec.congenio.impl.ConfigResource;
 import com.nec.congenio.impl.path.ResourceFinder;
 import com.nec.congenio.impl.path.SearchPath;
@@ -56,12 +58,14 @@ public class TestDataSet {
         if (repoFound) {
             return path;
         }
+        Properties props = new Properties();
         Element libs = Xml.getSingleElement("libs", elem, false);
         if (libs != null) {
-            return SearchPath.create(TestDataUtil.getFile(dirName),
-                    libs.getTextContent().trim());
+            String libDef = libs.getTextContent().trim();
+            props.setProperty(ConfigProperties.PROP_LIBS, libDef);
         }
-        return SearchPath.create(TestDataUtil.getFile(dirName));
+        return SearchPath.create(TestDataUtil.getFile(dirName),
+                props);
     }
 
     public MockResource createResource(Element elem) {

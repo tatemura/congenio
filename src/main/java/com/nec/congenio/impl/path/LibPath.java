@@ -44,6 +44,8 @@ import com.nec.congenio.impl.EvalContext;
  */
 public class LibPath implements ResourceFinder {
     public static final String SCHEME = "lib";
+    public static final String LIBPATH_SEPARATOR = ";";
+
     private static final Pattern LIB =
             Pattern.compile("^(\\w+):(.*)$");
     private static final Pattern LIB_DEF =
@@ -65,20 +67,43 @@ public class LibPath implements ResourceFinder {
         this.effective.putAll(global);
     }
 
+    /**
+     * Creates a derived LibPath resource finder for a
+     * specified directory. Local lib path definitions
+     * defined at the directory will be effective.
+     * @param dir the directory where the finder is used.
+     * @return a new LibPath finder for the directory
+     */
     public LibPath libPathAt(File dir) {
         LibPath libp = new LibPath(global);
-        Map<String, ResourceFinder> map = create(dir, this);
-        for (Map.Entry<String, ResourceFinder> e : map.entrySet()) {
-            libp.setLocalPath(e.getKey(), e.getValue());
+        Properties props = ConfigProperties.getProperties(dir);
+        String libdef = props.getProperty(ConfigProperties.PROP_LIBS);
+        if (libdef != null) {
+            Map<String, ResourceFinder> map = create(libdef, dir, this);
+            for (Map.Entry<String, ResourceFinder> e : map.entrySet()) {
+                libp.setLocalPath(e.getKey(), e.getValue());
+            }
         }
         return libp;
     }
 
-    public void setPathContext(String libName, ResourceFinder lib) {
+    /**
+     * Sets a global mapping from the lib name to a resource finder.
+     * The global mapping will be inherited to a new LibPath resource finder
+     * that is generated from this LibPath finder.
+     * @param libName the lib name
+     * @param lib a resource finder associated with the name.
+     */
+    public void setGlobalPathContext(String libName, ResourceFinder lib) {
         global.put(libName, lib);
         effective.put(libName, lib);
     }
 
+    /**
+     * Sets a local mapping from the lib name to a resource finder.
+     * @param libName the lib name.
+     * @param lib a resource finder associated with the name.
+     */
     public void setLocalPath(String libName, ResourceFinder lib) {
         if (!effective.containsKey(libName)) {
             effective.put(libName, lib);
@@ -150,26 +175,17 @@ public class LibPath implements ResourceFinder {
         LibPath lib = new LibPath();
         Map<String, ResourceFinder> map = create(libDefs, baseDir, lib);
         for (Map.Entry<String, ResourceFinder> e : map.entrySet()) {
-            lib.setPathContext(e.getKey(), e.getValue());
+            lib.setGlobalPathContext(e.getKey(), e.getValue());
         }
         return lib;
     }
 
-    private static Map<String, ResourceFinder> create(File baseDir, LibPath lib) {
-        Properties props = ConfigProperties.getProperties(baseDir);
-        String libdef = props.getProperty(ConfigProperties.PROP_LIBS);
-        if (libdef != null) {
-            return create(libdef, baseDir, lib);
-        } else {
-            return new HashMap<String, ResourceFinder>();
-        }
-    }
 
     private static Map<String, ResourceFinder> create(
             String libDefs, File baseDir, LibPath lib) {
         Map<String, ResourceFinder> map =
                 new HashMap<String, ResourceFinder>();
-        for (String def : libDefs.split(";")) {
+        for (String def : libDefs.split(LIBPATH_SEPARATOR)) {
             def = def.trim();
             if (!def.isEmpty()) {
                 Matcher match = LIB_DEF.matcher(def);
@@ -190,6 +206,18 @@ public class LibPath implements ResourceFinder {
 
     private static final String HOME = "~/";
 
+    /**
+     * Converts a path to a file.
+     *
+     * <p>A path can start with '/' for an absolute path
+     * and start with '~/' for a path relative to the user's
+     * home directory. Otherwise, it is regarded as a relative
+     * path.
+     * @param baseDir the base directory used for
+     *        a relative path.
+     * @param path the path to be converted to a file.
+     * @return a file for the path.
+     */
     static File toFile(File baseDir, String path) {
         if (path.startsWith("/")) {
             return new File(path);

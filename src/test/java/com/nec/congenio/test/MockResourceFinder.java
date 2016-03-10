@@ -60,7 +60,7 @@ public class MockResourceFinder implements ResourceFinder {
     }
 
     public void setLib(String name, ResourceFinder ctxt) {
-        libp.setPathContext(name, ctxt);
+        libp.setGlobalPathContext(name, ctxt);
     }
 
     @Override

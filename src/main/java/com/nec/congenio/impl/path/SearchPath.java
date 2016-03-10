@@ -62,54 +62,17 @@ public abstract class SearchPath implements ResourceFinder {
                 + ") @ " + desc);
     }
 
-    public static ConfigResource toResource(File file, Properties props) {
-        /**
-         * NOTE: file.getParentFile() can be null (= ".")
-         */
-        File dir = file.getParentFile();
-        LibPath libs = LibPath.create(dir, props);
-
-        return ConfigResource.create(new FileSearchPath(dir, libs), file);
+    public static ResourceFinder create(Class<?> cls, String prefix,
+            Properties props) {
+        return new ResourceSearchPath(cls, prefix, LibPath.create(props));
     }
 
-    public ConfigResource toResource(Class<?> cls, String path) {
-        URL url = cls.getResource(path);
-        if (url == null) {
-            url = cls.getResource(path + ".xml");
-        }
-        if (url == null) {
-            throw new ConfigException("resource not found: " + path);
-        }
-        String prefix = new File(path).getParent();
-        if (prefix == null) {
-            prefix = "";
-        }
-        return ConfigResource.create(
-                new ResourceSearchPath(cls, prefix, libp), url);
-    }
-
-    public static SearchPath create(Properties props) {
-        LibPath libs = LibPath.create(props);
-        return new NoPath(libs);
-    }
-
-    public static ResourceFinder create(Class<?> cls, String prefix) {
-        return new ResourceSearchPath(cls, prefix, new LibPath());
-    }
-
-    public static ResourceFinder create(File dir, String libdef) {
-        File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
-        LibPath libp = LibPath.create(libdef, baseDir);
-        return new FileSearchPath(baseDir, libp);
+    public static ResourceFinder create(File dir, Properties props) {
+        return new FileSearchPath(dir, LibPath.create(dir, props));
     }
 
     public static ResourceFinder create(File dir, LibPath libp) {
-        File baseDir = dir.isDirectory() ? dir : dir.getParentFile();
-        return new FileSearchPath(baseDir, libp);
-    }
-
-    public static ResourceFinder create(File dir) {
-        return create(dir, new LibPath());
+        return new FileSearchPath(dir, libp);
     }
 
     @Nullable
@@ -117,22 +80,6 @@ public abstract class SearchPath implements ResourceFinder {
 
     public abstract String getDescription();
 
-    public static class NoPath extends SearchPath {
-
-        public NoPath(LibPath libp) {
-            super(libp);
-        }
-
-        @Override
-        public ConfigResource findResource(String name) {
-            return null;
-        }
-
-        @Override
-        public String getDescription() {
-            return "none";
-        }
-    }
 
     public static class ResourceSearchPath extends SearchPath {
         private final Class<?> cls;
