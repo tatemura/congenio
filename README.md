@@ -35,7 +35,14 @@ and reproducibility to such experiments with complex systems. [TBC...]
 
 Usage
 -----
-TODO
+It can be used either a stand alone command or a library embedded to
+other programs.
+
+### Command-line (use in a script)
+
+A command line tool "congen" converts a config document into a
+set of resolved documents (in either XML or JSON format). A script can use
+this tool to generate and use resolved documents as input of experiments.
 
 ### Embedded (use as a library)
 We have developed the language as a library that is embedded to
@@ -43,14 +50,9 @@ our experiment platform (which runs various workloads on the system to be tested
 
 The library provides Java API to consume the generated configuration parameters.
 
-### Command-line (use in a script)
-
-Before getting ready to public use, a preview version will include command line
-tools to generate configurations in XML and JSON forms.
-
 ### Executor (run as a script)
 
-We plan to add additional language features to describe a simple executor
+[TODO] We plan to add additional language features to describe a simple executor
 that invokes external scripts (e.g. Puppet) with generated parameters.
 
 Language Features

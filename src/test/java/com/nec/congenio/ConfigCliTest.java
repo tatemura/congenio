@@ -34,9 +34,7 @@ public class ConfigCliTest {
         assertEquals("base.xml", base);
         assertTrue(cline.hasOption("index"));
         assertTrue(cline.hasOption('i'));
-        Object val = cline.getParsedOptionValue("index");
-        assertNotNull(val);
-        assertTrue(val instanceof Long);
+        assertEquals("1", cline.getOptionValue("index"));
         List<String> args = cline.getArgList();
         assertEquals(1, args.size());
         assertEquals("test.xml", args.get(0));

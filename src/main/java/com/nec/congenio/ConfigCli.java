@@ -1,12 +1,12 @@
 package com.nec.congenio;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Properties;
-
-import javax.json.JsonValue;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,8 +16,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.nec.congenio.ConfigDescription.Filter;
-import com.nec.congenio.ConfigDescription.Projection;
 import com.nec.congenio.json.JsonValueUtil;
 
 public class ConfigCli {
@@ -47,7 +45,7 @@ public class ConfigCli {
         .addOption("j", "json", false, "output json")
         .addOption("h", "help", false, "show help message")
         .addOption(Option.builder("i").longOpt("index")
-                .hasArg().argName("N").type(Number.class)
+                .hasArg().argName("N")
                 .desc("output Nth document").build())
         .addOption(Option.builder("p").longOpt("path")
                 .hasArg().argName("DOC_PATH")
@@ -55,6 +53,9 @@ public class ConfigCli {
         .addOption(Option.builder("b").longOpt("base")
                 .hasArg().argName("FILE")
                 .desc("base document to extend").build())
+        .addOption(Option.builder("o").longOpt("outdir")
+                .hasArg().argName("DIR_NAME")
+                .desc("output directory").build())
         .addOption(Option.builder("L").hasArgs()
                 .valueSeparator()
                 .argName("LIB_NAME=PATH")
@@ -79,38 +80,36 @@ public class ConfigCli {
 
         ConfigDescription cdl = createDescription(cline, cmdArgs);
 
-        /*
-         * TODO FIXME set up library paths in a different way
-         */
-        processLibPaths(cline);
-
         if (cline.hasOption('e')) {
             OutputStreamWriter writer = new OutputStreamWriter(System.out);
             cdl.write(writer, true);
-        } else if (cline.hasOption('j')) {
-            generateJson(cline, cdl);
         } else {
-            generateXml(cline, cdl);
+            generate(cline, cdl);
         }
     }
 
     private ConfigDescription createDescription(CommandLine cline, String[] args) {
         File file = new File(args[0]);
+        Properties props = ConfigDescription.congenProperties(file, libPathProperties(cline));
         if (cline.hasOption('b')) {
             String base = cline.getOptionValue('b');
             return ConfigDescription.create(file,
-                    ConfigDescription.create(new File(base)));
+                    ConfigDescription.create(new File(base)), props);
         } else {
-            return ConfigDescription.create(file);
+            return ConfigDescription.create(file, props);
         }
     }
 
-    private void processLibPaths(CommandLine cline) {
+    private Properties libPathProperties(CommandLine cline) {
         Properties props = cline.getOptionProperties("L");
         if (props != null) {
             StringBuilder sb = new StringBuilder();
             boolean contd = false;
             for (String libname : props.stringPropertyNames()) {
+                /**
+                 * FIXME this path must be evaluated relative
+                 * to the current working directory...
+                 */
                 String path = props.getProperty(libname);
                 if (contd) {
                     sb.append(';');
@@ -120,50 +119,60 @@ public class ConfigCli {
                 sb.append(libname).append('=').append(path);
             }
             if (contd) {
-                System.setProperty(
-                        ConfigProperties.PROP_LIBS, sb.toString());
+                String libdef = sb.toString();
+                Properties libprops = new Properties();
+                libprops.setProperty(
+                        ConfigProperties.PROP_LIBS, libdef);
+                return libprops;
             }
+        }
+        return new Properties();
+    }
+
+    private ValueHandler handler(CommandLine cline) {
+        if (cline.hasOption('o')) {
+            File dir = new File(cline.getOptionValue('o'));
+            if (cline.hasOption('j')) {
+                return new JsonSave(dir);
+            } else {
+                return new XmlSave(dir);
+            }
+        }
+        if (cline.hasOption('j')) {
+           return new JsonPrintout();
+        } else {
+           return new XmlPrintout();
         }
     }
 
-    private void generateJson(CommandLine cline, ConfigDescription cdl) {
-        Filter filter = new Filter(cline.getOptionValue("index"));
-        Projection proj = new Projection(cline.getOptionValue("path"));
-        int idx = 0;
-        for (ConfigValue conf : cdl.evaluate()) {
-            if (filter.output(idx)) {
-                JsonValue value = proj.project(conf).toJson();
-                System.out.println(JsonValueUtil.toString(value));
+    private void generate(CommandLine cline, ConfigDescription cdl)
+            throws Exception {
+        ValueHandler val = handler(cline);
+        try {
+            val.init(cdl);
+            int idx = 0;
+            Filter filter = filter(cline);
+            Projection proj = projection(cline);
+            for (ConfigValue conf : cdl.evaluate()) {
+                if (filter.output(idx)) {
+                    val.value(idx, proj.project(conf));
+                }
+                idx++;
+                if (idx > filter.maxIndex()) {
+                    break;
+                }
             }
-            idx++;
-            if (idx > filter.maxIndex()) {
-                break;
-            }
-        }    
-    }
-
-    private void generateXml(CommandLine cline, ConfigDescription cdl)
-            throws IOException {
-        Filter filter = new Filter(cline.getOptionValue("index"));
-        Projection proj = new Projection(cline.getOptionValue("path"));
-        OutputStreamWriter writer = new OutputStreamWriter(System.out);
-        int idx = 0;
-        for (ConfigValue conf : cdl.evaluate()) {
-            if (filter.output(idx)) {
-                writeSeparator(idx, writer);
-                Values.write(proj.project(conf), writer, true);
-            }
-            idx++;
-            if (idx > filter.maxIndex()) {
-                break;
-            }
+        } finally {
+            val.close();
         }
     }
 
-    void writeSeparator(int idx, Writer writer) throws IOException {
-        if (idx > 0) {
-            writer.write("<!-- " + idx + " -->\n");
-        }
+    private Filter filter(CommandLine cline) {
+        return new Filter(cline.getOptionValue("index"));
+    }
+
+    private Projection projection(CommandLine cline) {
+        return new Projection(cline.getOptionValue("path"));
     }
 
     /**
@@ -174,4 +183,186 @@ public class ConfigCli {
     public static void main(String[] args) throws Exception {
         new ConfigCli().execute(args);
     }
+
+    public interface ValueHandler {
+        void init(ConfigDescription cdl) throws Exception;
+        void value(int idx, ConfigValue value) throws Exception;
+        void close() throws Exception;
+    }
+
+    static class XmlPrintout implements ValueHandler {
+        private OutputStreamWriter writer = new OutputStreamWriter(System.out);
+
+        @Override
+        public void init(ConfigDescription cdl) throws Exception {
+            // nothing
+        }
+
+        @Override
+        public void value(int idx, ConfigValue value) throws IOException {
+            writeSeparator(idx, writer);
+            Values.write(value, writer, true);
+        }
+
+        private void writeSeparator(int idx, Writer writer) throws IOException {
+            if (idx > 0) {
+                writer.write("<!-- " + idx + " -->\n");
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            writer.flush();
+        }
+    }
+
+    static class JsonPrintout implements ValueHandler {
+        private PrintWriter prn = new PrintWriter(System.out);
+
+        @Override
+        public void init(ConfigDescription cdl) throws Exception {
+            // nothing
+        }
+
+        @Override
+        public void value(int idx, ConfigValue value) throws Exception {
+            prn.println(JsonValueUtil.toString(value.toJson()));
+        }
+        @Override
+        public void close() throws Exception {
+            prn.flush();
+        }
+    }
+
+    static class XmlSave extends AbstractSave {
+
+        public XmlSave(File dir) {
+            super(dir);
+        }
+
+        protected String fileSuffix() {
+            return ".xml";
+        }
+
+        @Override
+        protected void write(ConfigValue value, Writer writer)
+                throws IOException {
+            Values.write(value, writer, true);
+        }
+    }
+    static class JsonSave extends AbstractSave {
+
+        public JsonSave(File dir) {
+            super(dir);
+        }
+
+        @Override
+        protected String fileSuffix() {
+            return ".json";
+        }
+
+        @Override
+        protected void write(ConfigValue value, Writer writer)
+                throws IOException {
+            writer.write(JsonValueUtil.toString(value.toJson()));
+        }
+        
+    }
+
+    static abstract class AbstractSave implements ValueHandler {
+        private File dir;
+        private File outDir;
+
+        public AbstractSave(File dir) {
+            this.dir = dir;
+            this.outDir = new File(dir, "out");
+            outDir.mkdirs();
+        }
+        @Override
+        public void init(ConfigDescription cdl) throws Exception {
+           File file = new File(dir, "snapshot.xml");
+           OutputStreamWriter writer = new OutputStreamWriter(
+                   new FileOutputStream(file));
+           try {
+               cdl.write(writer);
+           } finally {
+               writer.close();
+           }
+        }
+        private static final int LEN = 8;
+        protected File fileFor(int idx) {
+            String name = Integer.toString(idx);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < LEN - name.length(); i++) {
+                sb.append('0');
+            }
+            sb.append(name).append(fileSuffix());
+            return new File(outDir, sb.toString());
+        }
+
+        protected abstract String fileSuffix();
+
+        protected abstract void write(ConfigValue value, Writer writer) throws IOException;
+
+        @Override
+        public void value(int idx, ConfigValue value) throws Exception {
+            OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(fileFor(idx)));
+            try {
+                write(value, writer);
+            } finally {
+                writer.close();
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+        }
+    }
+
+    static class Projection {
+        private final String[] path;
+    
+        Projection(String pattern) {
+            if (pattern == null) {
+                path = new String[0];
+            } else {
+                // path = pattern.split("\\.");
+                path = pattern.split("/");
+            }
+        }
+    
+        public ConfigValue project(ConfigValue val) {
+            ConfigValue res = val;
+            for (String p : path) {
+                res = res.getValue(p);
+            }
+            return res;
+        }
+    }
+
+    static class Filter {
+        private final int idx;
+
+        Filter(String pattern) {
+            if (pattern != null) {
+                idx = Integer.parseInt(pattern);
+            } else {
+                idx = -1;
+            }
+        }
+    
+        public boolean output(int idx) {
+            return this.idx < 0 || this.idx == idx;
+        }
+    
+        public int maxIndex() {
+            if (idx < 0) {
+                return Integer.MAX_VALUE;
+            } else {
+                return idx;
+            }
+        }
+    }
+
 }

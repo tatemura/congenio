@@ -17,16 +17,11 @@
 package com.nec.congenio;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
-import javax.json.JsonValue;
-
 import com.nec.congenio.impl.ConfigFactory;
-import com.nec.congenio.json.JsonValueUtil;
 
 public abstract class ConfigDescription {
     public static final String[] SUFFIXES = { "xml", "json", "properties" };
@@ -112,127 +107,17 @@ public abstract class ConfigDescription {
     @Nullable
     public abstract String get(String name);
 
-    public static final String EXTEND_ONLY = "extend-only";
-    public static final String PROP_MODE = "cdl.mode";
-    public static final String PROP_OUT = "cdl.output";
-    public static final String PROP_IDX = "cdl.doc.idx";
-    public static final String PROP_PATH = "cdl.doc.path";
-    public static final String PROP_BASE = "cdl.doc.base";
-
-    /**
-     * Converts a config file.
-     * @param args the filename of the config file.
-     * @throws Exception when conversion is failed.
-     */
-    public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
-            System.err.println("arg: filename");
-            return;
-        }
-        String base = System.getProperty(PROP_BASE);
-        File file = new File(args[0]);
-        ConfigDescription cdl;
-        if (base != null) {
-            cdl = ConfigDescription.create(file, ConfigDescription.create(new File(base)));
-        } else {
-            cdl = ConfigDescription.create(file);
-        }
-
-        if (EXTEND_ONLY.equals(System.getProperty(PROP_MODE))) {
-            OutputStreamWriter writer = new OutputStreamWriter(System.out);
-            cdl.write(writer, true);
-        } else if ("json".equals(System.getProperty(PROP_OUT))) {
-            Filter filter = new Filter(System.getProperty(PROP_IDX));
-            Projection proj = new Projection(System.getProperty(PROP_PATH));
-            int idx = 0;
-            for (ConfigValue conf : cdl.evaluate()) {
-                if (filter.output(idx)) {
-                    JsonValue value = proj.project(conf).toJson();
-                    System.out.println(JsonValueUtil.toString(value));
-                }
-                idx++;
-                if (idx > filter.maxIndex()) {
-                    break;
-                }
-            }
-        } else {
-            Filter filter = new Filter(System.getProperty(PROP_IDX));
-            Projection proj = new Projection(System.getProperty(PROP_PATH));
-            OutputStreamWriter writer = new OutputStreamWriter(System.out);
-            int idx = 0;
-            for (ConfigValue conf : cdl.evaluate()) {
-                if (filter.output(idx)) {
-                    writeSeparator(idx, writer);
-                    Values.write(proj.project(conf), writer, true);
-                }
-                idx++;
-                if (idx > filter.maxIndex()) {
-                    break;
-                }
-            }
-        }
-    }
 
     static Properties congenProperties() {
-        Properties sys = System.getProperties();
-        Properties prop = ConfigProperties.getProperties();
-        return ConfigProperties.merge(prop, sys);
+        return ConfigProperties.getProperties();
     }
 
     static Properties congenProperties(File file) {
-        Properties sys = System.getProperties();
+        return ConfigProperties.getProperties(file.getParentFile());
+    }
+
+    static Properties congenProperties(File file, Properties ext) {
         Properties prop = ConfigProperties.getProperties(file.getParentFile());
-        return ConfigProperties.merge(prop, sys);
-    }
-
-    static void writeSeparator(int idx, Writer writer) throws IOException {
-        if (idx > 0) {
-            writer.write("<!-- " + idx + " -->\n");
-        }
-    }
-
-    static class Projection {
-        String[] path;
-
-        Projection(String pattern) {
-            if (pattern == null) {
-                path = new String[0];
-            } else {
-                // path = pattern.split("\\.");
-                path = pattern.split("/");
-            }
-        }
-
-        public ConfigValue project(ConfigValue val) {
-            ConfigValue res = val;
-            for (String p : path) {
-                res = res.getValue(p);
-            }
-            return res;
-        }
-    }
-
-    static class Filter {
-        int idx;
-
-        Filter(String pattern) {
-            if (pattern != null) {
-                idx = Integer.parseInt(pattern);
-            } else {
-                idx = -1;
-            }
-        }
-
-        public boolean output(int idx) {
-            return this.idx < 0 || this.idx == idx;
-        }
-
-        public int maxIndex() {
-            if (idx < 0) {
-                return Integer.MAX_VALUE;
-            } else {
-                return idx;
-            }
-        }
+        return ConfigProperties.merge(prop, ext);
     }
 }
