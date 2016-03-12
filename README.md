@@ -12,7 +12,7 @@ to maintain and generate configuration values (primarily) for experiments.
  * reference resolution (@ref attribute)
  * value expression (@exp attribute)
 
-See [User's guide](https://github.com/tatemura/congenio/wiki/UserGuide) for detils.
+See [User's guide](https://github.com/tatemura/congenio/wiki/UsersGuide) for detils.
 
 ** NOTE: this is a preview version (0.0.X) ** The current implementation
 is just enough for our specific purposes. We will add some more missing
@@ -191,7 +191,7 @@ parameters from one document.
       <foreach name="servers" sep=",">5,10</foreach>
     <benchmarkParam>
 
-The above document is unfoleded into 8 documents (4 x 2), the one
+The above document is unfolded into 8 documents (4 x 2), the one
 of which is as follows:
 
     <benchmarkParam>
