@@ -1,10 +1,6 @@
 Congenio: Configuration Generation Language
 ========================================================
 
-** This is a preview version (0.0.X) ** The current implementation
-is just enough for our specific purposes. We will add some more missing
-pieces (with potentially incompatible changes) as well as documentation.
-We target Version 0.1.0 for public use.
 
 The Congenio Configuration Generation Language is a tool
 to maintain and generate configuration values (primarily) for experiments.
@@ -15,6 +11,13 @@ to maintain and generate configuration values (primarily) for experiments.
  documents (each of which is used for one experiment setting).
  * reference resolution (@ref attribute)
  * value expression (@exp attribute)
+
+See [User's guide](https://github.com/tatemura/congenio/wiki/UserGuide) for detils.
+
+** NOTE: this is a preview version (0.0.X) ** The current implementation
+is just enough for our specific purposes. We will add some more missing
+pieces (with potentially incompatible changes) as well as documentation.
+We target Version 0.1.0 for public use.
 
 Motivation
 -----
@@ -31,7 +34,8 @@ was one approach, which tend to bury important parameters into the script code,
 quickly making experiments no longer manageable and repeatable.
 
 The configuration generation language was developed to bring manageability
-and reproducibility to such experiments with complex systems. [TBC...]
+and reproducibility to such experiments with complex systems.
+
 
 Usage
 -----
@@ -45,10 +49,12 @@ set of resolved documents (in either XML or JSON format). A script can use
 this tool to generate and use resolved documents as input of experiments.
 
 ### Embedded (use as a library)
-We have developed the language as a library that is embedded to
-our experiment platform (which runs various workloads on the system to be tested).
-
 The library provides Java API to consume the generated configuration parameters.
+
+In fact, the Congenio language is originally developed as a library within
+our experiment platform [Strudel](https://github.com/tatemura/strudel)
+(which runs various workloads on the system to be tested).
+
 
 ### Executor (run as a script)
 
@@ -57,7 +63,14 @@ that invokes external scripts (e.g. Puppet) with generated parameters.
 
 Language Features
 -----------------
-TODO: Wiki will explain more on language features.
+With @extends attribute, an experiment document can refer to existing templates
+(that define various components such as benchmarks and database configuration
+parameters) and customize the default values of these templates. With foreach
+elements, an experiment document can generate a set of documents, each of
+which corresponds to one execution run with a specific set of parameters.
+
+See [wiki](https://github.com/tatemura/congenio/wiki/LanguageFeatures) for details.
+
 
 ### Inheritance (@extends)
 Suppose you have a file jpa-mysql.xml:
@@ -143,6 +156,18 @@ database URL, a document can extend only one element:
     </experiment>
 
 ### Value expression (@exp)
+A reference let components share the exactly same values. But sometimes,
+a components need a slightly different value. For example, we just want
+to share the host name of the server used by multiple components.
+
+    <experiment>
+        <host>localhost</host>
+        ...
+    </experiment>
+
+But each component may need a special string derived from a host
+name. For example, by using a value expression (concat), an URL of
+JDBC can be generated from a reference:
 
 	<property name="javax.persistence.jdbc.url"
 	          exp="concat('')">
@@ -155,6 +180,24 @@ database URL, a document can extend only one element:
 A foreach element is used
 to create a series of experiments with slightly different
 parameters from one document. 
+
+    <benchmarkParam>
+      <foreach name="scale">
+        <s><clients>10</clients><users>100000</users></s>
+        <s><clients>20</clients><users>200000</users></s>
+        <s><clients>40</clients><users>400000</users></s>
+        <s><clients>80</clients><users>800000</users></s>
+      </foreach>
+      <foreach name="servers" sep=",">5,10</foreach>
+    <benchmarkParam>
+
+The above document is unfoleded into 8 documents (4 x 2), the one
+of which is as follows:
+
+    <benchmarkParam>
+      <scale><clients>10</clients><users>100000</users></scale>
+      <servers>5</servers>
+    </benchmarkParam>
 
 Requirements
 ------------
