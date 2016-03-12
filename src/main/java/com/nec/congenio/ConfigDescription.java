@@ -18,7 +18,7 @@ package com.nec.congenio;
 
 import java.io.File;
 import java.io.Writer;
-import java.util.Properties;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import com.nec.congenio.impl.ConfigFactory;
@@ -53,27 +53,32 @@ public abstract class ConfigDescription {
     public abstract Iterable<ConfigValue> evaluate();
 
     public static ConfigDescription create(File file) {
-        return create(file, congenProperties(file));
+        return create(file,
+                ConfigProperties.getLibDefs(file.getParentFile()));
     }
 
-    public static ConfigDescription create(File file, Properties props) {
-        return new ConfigFactory(props).create(file);
+    public static ConfigDescription create(File file, Map<String, String> libDefs) {
+        return new ConfigFactory(libDefs).create(file);
     }
 
     public static ConfigDescription create(Class<?> cls, String name) {
-        return create(cls, name, congenProperties());
+        return create(cls, name,
+                ConfigProperties.getLibDefs());
     }
 
-    public static ConfigDescription create(Class<?> cls, String name, Properties props) {
-        return new ConfigFactory(props).create(cls, name);
+    public static ConfigDescription create(Class<?> cls,
+            String name, Map<String, String> libDefs) {
+        return new ConfigFactory(libDefs).create(cls, name);
     }
 
     public static ConfigDescription create(File file, ConfigDescription base) {
-        return create(file, base, congenProperties(file));
+        return create(file, base,
+                ConfigProperties.getLibDefs(file.getParentFile()));
     }
 
-    public static ConfigDescription create(File file, ConfigDescription base, Properties props) {
-        return new ConfigFactory(props).create(file, base);
+    public static ConfigDescription create(File file, ConfigDescription base,
+            Map<String, String> libDefs) {
+        return new ConfigFactory(libDefs).create(file, base);
     }
 
     public abstract String getName();
@@ -107,17 +112,4 @@ public abstract class ConfigDescription {
     @Nullable
     public abstract String get(String name);
 
-
-    static Properties congenProperties() {
-        return ConfigProperties.getProperties();
-    }
-
-    static Properties congenProperties(File file) {
-        return ConfigProperties.getProperties(file.getParentFile());
-    }
-
-    static Properties congenProperties(File file, Properties ext) {
-        Properties prop = ConfigProperties.getProperties(file.getParentFile());
-        return ConfigProperties.merge(prop, ext);
-    }
 }

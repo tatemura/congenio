@@ -19,11 +19,19 @@ package com.nec.congenio;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class ConfigProperties {
 
     public static final String PROPERTY_FILE_NAME = "congen.properties";
+    private static final Pattern LIB_DEF =
+            Pattern.compile("^\\s*(\\w+)\\s*=\\s*(.*)$");
+    private static final int DEF_NAME = 1;
+    private static final int DEF_PATH = 2;
 
     /**
      * Semicolon-separated pairs of lib path definitions. A lib path definition
@@ -36,6 +44,9 @@ public final class ConfigProperties {
      * </pre>
      */
     public static final String PROP_LIBS = "congen.libs";
+    public static final String LIBPATH_SEPARATOR = ";";
+
+    public static final String LIBPATH_FILE_NAME = "congen-libs.properties";
 
     private ConfigProperties() {
     }
@@ -58,46 +69,106 @@ public final class ConfigProperties {
         return false;
     }
 
-    public static Properties getProperties() {
-        return getProperties(null);
-    }
-
     /**
-     * Gets config properties if it exists in the directory.
-     * @param dir the directory from which the property
-     *        file is found.
-     * @return an empty properties if there is no
-     *        config property file in the directory.
+     * Gets lib-path definitions defined at the given directory.
+     * @param dir the directory
+     * @return a map from name to path.
      */
-    public static Properties getProperties(File dir) {
-        Properties prop = new Properties();
-        File file = new File(dir, ConfigProperties.PROPERTY_FILE_NAME);
-        loadProperties(prop, file);
-        return prop;
-    }
-
-    /**
-     * Merges the config properties.
-     * 
-     * <p>Use this method instead of just overwriting Properties
-     * (e.g. base.putAll(ext)) since merge must treat some
-     * property values in a special manner (i.e., combining values
-     * of the same property).
-     * @param base the base properties
-     * @param ext the properties that overrides the base.
-     * @return the merged properties.
-     */
-    public static Properties merge(Properties base, Properties ext) {
-        Properties prop = new Properties(base);
-        prop.putAll(ext);
-        /**
-         * TODO refactor the following.
-         */
-        String libBase = base.getProperty(PROP_LIBS, "");
-        String libExt = ext.getProperty(PROP_LIBS, "");
-        if (!libExt.isEmpty()) {
-            prop.setProperty(PROP_LIBS, libBase + ";" + libExt);
+    public static Map<String, String> getLibDefs(File dir) {
+        Properties props = libDefProperties(dir);
+        if (!props.isEmpty()) {
+            return toAbsolutes(props, dir);
         }
-        return prop;
+        String libdef = findLibDefStr(dir);
+        if (libdef != null) {
+            return parse(libdef, dir);
+        }
+        return new HashMap<String, String>();
     }
+
+    public static Map<String, String> getLibDefs() {
+        return getLibDefs(new File("."));
+    }
+
+    private static Properties libDefProperties(File dir) {
+        Properties props = new Properties();
+        File file = new File(dir, ConfigProperties.LIBPATH_FILE_NAME);
+        loadProperties(props, file);
+        return props;
+    }
+
+    private static String findLibDefStr(File dir) {
+        Properties props = new Properties();
+        File file = new File(dir, ConfigProperties.PROPERTY_FILE_NAME);
+        loadProperties(props, file);
+        return props.getProperty(ConfigProperties.PROP_LIBS);
+    }
+
+    /**
+     * Converts a lib path definitions (in properties)
+     * into a map of name and absolute paths.
+     * @param paths a set of properties, each of which
+     *        is a lib name and path.
+     * @param baseDir the base directory for relative paths.
+     * @return a map from names to absolute paths.
+     */
+    public static Map<String, String> toAbsolutes(Properties paths,
+            File baseDir) {
+        Map<String, String> map =
+                new HashMap<String, String>();
+        for (String name : paths.stringPropertyNames()) {
+            map.put(name, toAbsolute(baseDir,
+                    paths.getProperty(name)));
+        }
+        return map;
+    }
+
+    /**
+     * Parses a lib path definition.
+     * @param libDefStr a pattern of lib path definition
+     * @return a map of names and paths
+     */
+    public static Map<String, String> parse(String libDefStr,
+            File baseDir) {
+        Map<String, String> map =
+                new HashMap<String, String>();
+        for (String def : libDefStr.split(ConfigProperties.LIBPATH_SEPARATOR)) {
+            def = def.trim();
+            if (!def.isEmpty()) {
+                Matcher match = LIB_DEF.matcher(def);
+                if (match.matches()) {
+                    String libName = match.group(DEF_NAME);
+                    String path = match.group(DEF_PATH);
+                    map.put(libName, toAbsolute(baseDir, path));
+                }
+            }
+        }
+        return map;
+    }
+
+    private static final String HOME = "~/";
+
+    /**
+     * Converts a path to a file.
+     *
+     * <p>A path can start with '/' for an absolute path
+     * and start with '~/' for a path relative to the user's
+     * home directory. Otherwise, it is regarded as a relative
+     * path.
+     * @param baseDir the base directory used for
+     *        a relative path.
+     * @param path the path to be converted to a file.
+     * @return a file for the path.
+     */
+    static String toAbsolute(File baseDir, String path) {
+        if (path.startsWith("/")) {
+            return path;
+        } else if (path.startsWith(HOME)) {
+            String home = System.getProperty("user.home");
+            return new File(home + "/" + path.substring(HOME.length()))
+                    .getAbsolutePath();
+        }
+        return new File(baseDir, path).getAbsolutePath();
+    }
+
 }

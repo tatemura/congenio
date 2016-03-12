@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
@@ -90,43 +92,26 @@ public class ConfigCli {
 
     private ConfigDescription createDescription(CommandLine cline, String[] args) {
         File file = new File(args[0]);
-        Properties props = ConfigDescription.congenProperties(file, libPathProperties(cline));
+        Map<String, String> libDefs =
+                ConfigProperties.getLibDefs(file.getParentFile());
+        libDefs.putAll(libPathDefs(cline));
+
         if (cline.hasOption('b')) {
             String base = cline.getOptionValue('b');
             return ConfigDescription.create(file,
-                    ConfigDescription.create(new File(base)), props);
+                    ConfigDescription.create(new File(base)),
+                   libDefs);
         } else {
-            return ConfigDescription.create(file, props);
+            return ConfigDescription.create(file, libDefs);
         }
     }
 
-    private Properties libPathProperties(CommandLine cline) {
+    private Map<String, String> libPathDefs(CommandLine cline) {
         Properties props = cline.getOptionProperties("L");
         if (props != null) {
-            StringBuilder sb = new StringBuilder();
-            boolean contd = false;
-            for (String libname : props.stringPropertyNames()) {
-                /**
-                 * FIXME this path must be evaluated relative
-                 * to the current working directory...
-                 */
-                String path = props.getProperty(libname);
-                if (contd) {
-                    sb.append(';');
-                } else {
-                    contd = true;
-                }
-                sb.append(libname).append('=').append(path);
-            }
-            if (contd) {
-                String libdef = sb.toString();
-                Properties libprops = new Properties();
-                libprops.setProperty(
-                        ConfigProperties.PROP_LIBS, libdef);
-                return libprops;
-            }
+            return ConfigProperties.toAbsolutes(props, new File("."));
         }
-        return new Properties();
+        return Collections.emptyMap();
     }
 
     private ValueHandler handler(CommandLine cline) {
@@ -175,6 +160,8 @@ public class ConfigCli {
         return new Projection(cline.getOptionValue("path"));
     }
 
+
+
     /**
      * Execute command line interface of congen.
      * @param args command line arguments
@@ -186,7 +173,9 @@ public class ConfigCli {
 
     public interface ValueHandler {
         void init(ConfigDescription cdl) throws Exception;
+
         void value(int idx, ConfigValue value) throws Exception;
+
         void close() throws Exception;
     }
 
@@ -228,6 +217,7 @@ public class ConfigCli {
         public void value(int idx, ConfigValue value) throws Exception {
             prn.println(JsonValueUtil.toString(value.toJson()));
         }
+
         @Override
         public void close() throws Exception {
             prn.flush();
@@ -250,6 +240,7 @@ public class ConfigCli {
             Values.write(value, writer, true);
         }
     }
+
     static class JsonSave extends AbstractSave {
 
         public JsonSave(File dir) {
@@ -269,7 +260,7 @@ public class ConfigCli {
         
     }
 
-    static abstract class AbstractSave implements ValueHandler {
+    abstract static class AbstractSave implements ValueHandler {
         private File dir;
         private File outDir;
 
@@ -278,6 +269,7 @@ public class ConfigCli {
             this.outDir = new File(dir, "out");
             outDir.mkdirs();
         }
+
         @Override
         public void init(ConfigDescription cdl) throws Exception {
            File file = new File(dir, "snapshot.xml");
@@ -289,7 +281,9 @@ public class ConfigCli {
                writer.close();
            }
         }
+
         private static final int LEN = 8;
+
         protected File fileFor(int idx) {
             String name = Integer.toString(idx);
             StringBuilder sb = new StringBuilder();

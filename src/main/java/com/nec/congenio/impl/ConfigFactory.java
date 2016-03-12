@@ -17,18 +17,22 @@
 package com.nec.congenio.impl;
 
 import java.io.File;
-import java.util.Properties;
-
+import java.util.Collections;
+import java.util.Map;
 import org.w3c.dom.Element;
 
 import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigException;
 
 public class ConfigFactory {
-    private final Properties props;
+    private final Map<String, String> libDefs;
 
-    public ConfigFactory(Properties props) {
-        this.props = props;
+    public ConfigFactory() {
+        this.libDefs = Collections.emptyMap();
+    }
+
+    public ConfigFactory(Map<String, String> libDefs) {
+        this.libDefs = libDefs;
     }
 
     /**
@@ -38,14 +42,14 @@ public class ConfigFactory {
      */
     public XmlConfigDescription create(File file) {
         if (file.exists()) {
-            return create(ConfigResource.create(file, props));
+            return create(ConfigResource.create(file, libDefs));
         } else {
             throw new ConfigException("file not found: " + file.getAbsolutePath());
         }
     }
 
     public XmlConfigDescription create(Class<?> cls, String resourcePath) {
-        return create(ConfigResource.create(cls, resourcePath, props));
+        return create(ConfigResource.create(cls, resourcePath, libDefs));
     }
 
     /**
@@ -58,7 +62,7 @@ public class ConfigFactory {
      */
     public XmlConfigDescription create(File file, ConfigDescription base) {
         if (file.exists()) {
-            return create(ConfigResource.create(file, props),
+            return create(ConfigResource.create(file, libDefs),
                     (XmlConfigDescription) base);
         } else {
             throw new ConfigException("file not found: " + file.getAbsolutePath());

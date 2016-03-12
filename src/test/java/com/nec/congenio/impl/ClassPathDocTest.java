@@ -18,8 +18,6 @@ package com.nec.congenio.impl;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Properties;
-
 import org.junit.Test;
 
 import com.nec.congenio.ConfigValue;
@@ -29,7 +27,7 @@ public class ClassPathDocTest {
     @Test
     public void test() {
         XmlConfigDescription conf =
-                new ConfigFactory(new Properties())
+                new ConfigFactory()
                 .create(ClassPathDocTest.class, "data");
         ConfigValue val = conf.resolve();
         assertEquals(1, val.getInt("a"));
@@ -39,7 +37,7 @@ public class ClassPathDocTest {
     @Test
     public void testExtend() {
         XmlConfigDescription conf =
-                new ConfigFactory(new Properties())
+                new ConfigFactory()
                 .create(ClassPathDocTest.class, "data1");
         ConfigValue val = conf.resolve();
         assertEquals(3, val.getInt("a"));

@@ -16,8 +16,10 @@
 
 package com.nec.congenio.test;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.w3c.dom.Element;
 
@@ -58,14 +60,14 @@ public class TestDataSet {
         if (repoFound) {
             return path;
         }
-        Properties props = new Properties();
+        Map<String, String> defs = new HashMap<String, String>();
         Element libs = Xml.getSingleElement("libs", elem, false);
+        File dir = TestDataUtil.getFile(dirName);
         if (libs != null) {
             String libDef = libs.getTextContent().trim();
-            props.setProperty(ConfigProperties.PROP_LIBS, libDef);
+            defs.putAll(ConfigProperties.parse(libDef, dir));
         }
-        return SearchPath.create(TestDataUtil.getFile(dirName),
-                props);
+        return SearchPath.create(dir, defs);
     }
 
     public MockResource createResource(Element elem) {

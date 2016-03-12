@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.json.JsonObject;
@@ -41,15 +42,16 @@ public abstract class ConfigResource {
     public static final String JSON_SUFFIX = ".json";
     public static final String PROPERTY_SUFFIX = ".properties";
 
+
     /**
      * Creates a resource in a class path.
      * @param cls a class that is used to define class paths.
      * @param path a search path.
-     * @param props properties to configure a resource.
+     * @param libDefs a map of names and paths
      * @return a config resource.
      */
     public static ConfigResource create(Class<?> cls,
-            String path, Properties props) {
+            String path, Map<String, String> libDefs) {
         URL url = cls.getResource(path);
         if (url == null) {
             url = cls.getResource(path + ".xml");
@@ -61,22 +63,23 @@ public abstract class ConfigResource {
         if (prefix == null) {
             prefix = "";
         }
-        return create(SearchPath.create(cls, prefix, props), url);
+        return create(SearchPath.create(cls, prefix, libDefs), url);
     }
 
     /**
      * Creates a resource from a file.
      * @param file the file used as a resource.
-     * @param props properties to configure resource.
+     * @param libDefs a map of names and paths
      * @return a config resource.
      */
-    public static ConfigResource create(File file, Properties props) {
+    public static ConfigResource create(File file,
+            Map<String, String> libDefs) {
         /**
          * NOTE: file.getParentFile() can be null (= ".")
          */
         File dir = file.getParentFile();
 
-        return create(SearchPath.create(dir, props), file);
+        return create(SearchPath.create(dir, libDefs), file);
     }
 
     public static ConfigResource create(ResourceFinder path, File file) {

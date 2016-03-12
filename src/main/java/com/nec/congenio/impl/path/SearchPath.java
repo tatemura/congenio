@@ -19,7 +19,7 @@ package com.nec.congenio.impl.path;
 import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -63,12 +63,13 @@ public abstract class SearchPath implements ResourceFinder {
     }
 
     public static ResourceFinder create(Class<?> cls, String prefix,
-            Properties props) {
-        return new ResourceSearchPath(cls, prefix, LibPath.create(props));
+            Map<String, String> libDefs) {
+        return new ResourceSearchPath(cls, prefix,
+                LibPath.create(libDefs));
     }
 
-    public static ResourceFinder create(File dir, Properties props) {
-        return new FileSearchPath(dir, LibPath.create(dir, props));
+    public static ResourceFinder create(File dir, Map<String, String> libDefs) {
+        return new FileSearchPath(dir, LibPath.create(libDefs));
     }
 
     public static ResourceFinder create(File dir, LibPath libp) {
