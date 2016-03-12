@@ -12,12 +12,12 @@ to maintain and generate configuration values (primarily) for experiments.
  * reference resolution (@ref attribute)
  * value expression (@exp attribute)
 
-See [User's guide](https://github.com/tatemura/congenio/wiki/UsersGuide) for detils.
+See [User's guide](https://github.com/tatemura/congenio/wiki/UsersGuide) for details.
 
 ** NOTE: this is a preview version (0.0.X) ** The current implementation
 is just enough for our specific purposes. We will add some more missing
 pieces (with potentially incompatible changes) as well as documentation.
-We target Version 0.1.0 for public use.
+We target Version 0.1.0 for stable versions.
 
 Motivation
 -----
@@ -47,6 +47,8 @@ other programs.
 A command line tool "congen" converts a config document into a
 set of resolved documents (in either XML or JSON format). A script can use
 this tool to generate and use resolved documents as input of experiments.
+(See [wiki](https://github.com/tatemura/congenio/wiki/CommandLineInterface)
+on the command line interface.)
 
 ### Embedded (use as a library)
 The library provides Java API to consume the generated configuration parameters.
@@ -68,6 +70,8 @@ With @extends attribute, an experiment document can refer to existing templates
 parameters) and customize the default values of these templates. With foreach
 elements, an experiment document can generate a set of documents, each of
 which corresponds to one execution run with a specific set of parameters.
+Attributes @ref and @exp are useful to generate component parameters that
+are related to each other.
 
 See [wiki](https://github.com/tatemura/congenio/wiki/LanguageFeatures) for details.
 
@@ -198,6 +202,25 @@ of which is as follows:
       <scale><clients>10</clients><users>100000</users></scale>
       <servers>5</servers>
     </benchmarkParam>
+
+Installation
+------------
+Use Maven to install an artifact to your local repository in order to
+use Congenio as a library:
+
+    % git checkout v0.1.0
+    % mvn -DskipTests install
+
+To use a command line tool, running "mvn -DskipTests package" is enough to generate
+what is required. The distribution package is in the "target" directory:
+
+    % ls target/congenio-*-dist.tar.gz
+
+Unpack the package at an appropriate location and set up your path to
+bin/congen. You can also use a symbolic link to this file:
+
+    % sudo ln -s /usr/local/share/congenio/congenio-0.1.0/bin/congen /usr/local/bin
+
 
 Requirements
 ------------
