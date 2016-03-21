@@ -16,14 +16,15 @@ public class ConfigCliTest {
     public void testArgs() throws Exception {
         ConfigCli cli = new ConfigCli();
         CommandLine cline =
-                cli.createCommandLine("-e", "--json",
+                cli.createCommandLine("-e", "--format", "json",
                         "-Lconf=~/config", "-Ltmp=/tmp",
                         "-b", "base.xml",
                         "-i", "1", "test.xml");
         assertTrue(cline.hasOption('e'));
         assertTrue(cline.hasOption("extend-only"));
-        assertTrue(cline.hasOption('j'));
-        assertTrue(cline.hasOption("json"));
+        assertTrue(cline.hasOption('f'));
+        assertTrue(cline.hasOption("format"));
+        assertEquals("json", cline.getOptionValue("format"));
         Properties libs = cline.getOptionProperties("L");
         assertNotNull(libs);
         assertEquals("~/config", libs.getProperty("conf"));
