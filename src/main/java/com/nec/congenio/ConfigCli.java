@@ -19,8 +19,13 @@ package com.nec.congenio;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -32,6 +37,7 @@ import org.apache.commons.cli.ParseException;
 
 import com.nec.congenio.exec.OutputFormat;
 import com.nec.congenio.exec.ValueExecBuilder;
+import com.nec.congenio.exec.ValueHandler;
 
 /**
  * A class that implements a Command-Line Interface.
@@ -39,10 +45,102 @@ import com.nec.congenio.exec.ValueExecBuilder;
  *
  */
 public class ConfigCli {
-    public static final String OPT_PATH = "path";
-    public static final String OPT_INDEX = "index";
-    public static final String OPT_FORMAT = "format";
+    public enum Opt {
+        /**
+         * Option to set a filtering
+         * to select generated documents
+         * by index.
+         */
+        INDEX("i", LOPT_INDEX),
+        /**
+         * Option to set a document path
+         * that extracts output from a
+         * generated document.
+         */
+        PATH("p", LOPT_PATH),
+        /**
+         * Option to specify output
+         * format (XML, JSON, properties).
+         */
+        FORMAT("f", LOPT_FORMAT),
+        /**
+         * Option to specify a base
+         * document to be extended.
+         */
+        BASE("b", "base"),
+        /**
+         * Option to set an output
+         * directory.
+         */
+        OUT_DIR("o", "outdir"),
+        /**
+         * Option to define a
+         * library path.
+         */
+        LIB("L"),
+        /**
+         * Option to resolve extension
+         * only.
+         */
+        EXTEND_ONLY("e", "extend-only");
+
+        private final String value;
+        private final String longOpt;
+        Opt(String value) {
+            this.value = value;
+            this.longOpt = null;
+        }
+
+        Opt(String value, String longOpt) {
+            this.value = value;
+            this.longOpt = longOpt;
+        }
+
+        protected String shortOpt() {
+            return value;
+        }
+
+        protected String longOpt() {
+            return longOpt;
+        }
+    }
+
+    public static final String LOPT_PATH = "path";
+    public static final String LOPT_INDEX = "index";
+    public static final String LOPT_FORMAT = "format";
+
+    private static final Map<String, Option> OPTS = new HashMap<String, Option>();
+
+    static {
+        def(optFor(Opt.INDEX)
+                .hasArg().argName("INDEX_PATTERN"),
+                "selects documents by its index (e.g., '1', '0,3,4', '2..4')");
+        def(optFor(Opt.PATH)
+                .hasArg().argName("DOC_PATH"),
+                "outputs a path in document");
+        def(optFor(Opt.FORMAT)
+                .hasArg().argName("FORMAT"),
+                "sets output format (xml, json, properties,"
+                        + " xml-no-indent, json-no-indent)");
+        def(optFor(Opt.BASE)
+                .hasArg().argName("FILE"),
+                "sets a base document to extend");
+        def(optFor(Opt.OUT_DIR)
+                .hasArg().argName("DIR_NAME"),
+                "sets output directory");
+        def(optFor(Opt.LIB)
+                .hasArgs().valueSeparator().argName("LIB_NAME=PATH"),
+                "defines a lib path");
+        def(optFor(Opt.EXTEND_ONLY),
+                "resolves extention only");
+    }
+
     private final String name;
+    private final Set<String> options =
+            new HashSet<String>(OPTS.keySet());
+
+    @Nullable
+    private ConfigDescription baseDescription;
 
     public ConfigCli() {
         this.name = "congen";
@@ -51,7 +149,55 @@ public class ConfigCli {
     public ConfigCli(String name) {
         this.name = name;
     }
-    
+
+    /**
+     * Disable options.
+     * @param opts an array of options
+     *        to be disabled.
+     */
+    public void disableOptions(Opt... opts) {
+        for (Opt o : opts) {
+            options.remove(o.shortOpt());
+        }
+    }
+
+    /**
+     * Enable options.
+     * @param opts an array of options
+     *        to be enabled.
+     */
+    public void enableOptions(Opt...opts) {
+        for (Opt o : opts) {
+            options.add(o.shortOpt());
+        }
+    }
+
+    public void resetOptions() {
+        options.clear();
+    }
+
+    public void resetOptionsToDefault() {
+        options.clear();
+        options.addAll(OPTS.keySet());
+    }
+
+    public void setBaseDescription(ConfigDescription baseDescription) {
+        this.baseDescription = baseDescription;
+    }
+
+    private static void def(Option.Builder builder, String description) {
+        Option opt = builder.desc(description).build();
+        OPTS.put(opt.getOpt(), opt);
+    }
+
+    private static Option.Builder optFor(Opt opt) {
+        Option.Builder builder = Option.builder(opt.shortOpt());
+        String lopt = opt.longOpt();
+        if (lopt != null) {
+            builder.longOpt(lopt);
+        }
+        return builder;
+    }
 
     public CommandLine createCommandLine(String... args) throws ParseException {
         CommandLineParser parser = new DefaultParser();
@@ -64,28 +210,14 @@ public class ConfigCli {
      */
     public Options getOptions() {
         Options opts = new Options()
-        .addOption("e", "extend-only", false, "resolves extention only")
-        .addOption("h", "help", false, "shows help message")
-        .addOption(Option.builder("i").longOpt(OPT_INDEX)
-                .hasArg().argName("INDEX_PATTERN")
-                .desc("selects documents by its index (e.g., '1', '0,3,4', '2..4')").build())
-        .addOption(Option.builder("p").longOpt(OPT_PATH)
-                .hasArg().argName("DOC_PATH")
-                .desc("outputs a path in document").build())
-        .addOption(Option.builder("f").longOpt(OPT_FORMAT)
-                .hasArg().argName("FORMAT")
-                .desc("sets output format (xml, json, properties,"
-                        + " xml-no-indent, json-no-indent)").build())
-        .addOption(Option.builder("b").longOpt("base")
-                .hasArg().argName("FILE")
-                .desc("sets a base document to extend").build())
-        .addOption(Option.builder("o").longOpt("outdir")
-                .hasArg().argName("DIR_NAME")
-                .desc("sets output directory").build())
-        .addOption(Option.builder("L").hasArgs()
-                .valueSeparator()
-                .argName("LIB_NAME=PATH")
-                .desc("defines a lib path").build());
+        .addOption("h", "help", false, "shows help message");
+
+        for (String o : options) {
+            Option op = OPTS.get(o);
+            if (op != null) {
+                opts.addOption(op);
+            }
+        }
         return opts;
     }
 
@@ -102,14 +234,34 @@ public class ConfigCli {
         } else if (cline.hasOption('e')) {
             showExtendOnly(cline);
         } else {
-            String[] cmdArgs = cline.getArgs();
-            ConfigDescription cdl = createDescription(cline, new File(cmdArgs[0]));
-            ValueExecBuilder builder = new ValueExecBuilder(cdl)
-            .filterIndex(cline.getOptionValue(OPT_INDEX))
-            .path(cline.getOptionValue(OPT_PATH));
+            ValueExecBuilder builder = builder(cline);
             setHandler(builder, cline);
             builder.build().run();
         }
+    }
+
+    /**
+     * Executes a command with a given handler.
+     * @param handler the handler that handles generated values.
+     * @param args command arguments.
+     * @throws Exception when the handler throws exception or
+     *      when document generation is failed.
+     */
+    public void execute(ValueHandler handler, String... args) throws Exception {
+        execute(handler, createCommandLine(args));
+    }
+
+    public void execute(ValueHandler handler, CommandLine cline) throws Exception {
+        builder(cline).handler(handler).build().run();
+    }
+
+    private ValueExecBuilder builder(CommandLine cline) {
+        String[] cmdArgs = cline.getArgs();
+        ConfigDescription cdl = createDescription(cline, new File(cmdArgs[0]));
+        ValueExecBuilder builder = new ValueExecBuilder(cdl)
+        .filterIndex(cline.getOptionValue(LOPT_INDEX))
+        .path(cline.getOptionValue(LOPT_PATH));
+        return builder;
     }
 
     public void doHelp(String... args) {
@@ -133,14 +285,20 @@ public class ConfigCli {
                 ConfigProperties.getLibDefs(file.getParentFile());
         libDefs.putAll(libPathDefs(cline));
 
-        if (cline.hasOption('b')) {
-            String base = cline.getOptionValue('b');
-            return ConfigDescription.create(file,
-                    ConfigDescription.create(new File(base)),
-                   libDefs);
+        ConfigDescription base = baseDescription(cline);
+        if (base != null) {
+            return ConfigDescription.create(file, base, libDefs);
         } else {
             return ConfigDescription.create(file, libDefs);
         }
+    }
+
+    private ConfigDescription baseDescription(CommandLine cline) {
+        if (cline.hasOption('b')) {
+            String base = cline.getOptionValue('b');
+            return ConfigDescription.create(new File(base));
+        }
+        return baseDescription;
     }
 
     private Map<String, String> libPathDefs(CommandLine cline) {
@@ -161,15 +319,15 @@ public class ConfigCli {
     }
 
     private OutputFormat format(CommandLine cline) {
-        if (cline.hasOption(OPT_FORMAT)) {
+        if (cline.hasOption(LOPT_FORMAT)) {
             OutputFormat format = OutputFormat.find(
-                    cline.getOptionValue(OPT_FORMAT));
+                    cline.getOptionValue(LOPT_FORMAT));
             if (format != null) {
                 return format;
             } else {
                 throw new ConfigException(
                         "unsupported output format: "
-                        + cline.getOptionValue(OPT_FORMAT));
+                        + cline.getOptionValue(LOPT_FORMAT));
             }
         } else {
             return OutputFormat.XML;
