@@ -1,5 +1,5 @@
 <Tests>
-	<Test>
+	<Test name="simpleExtends">
 	  <repo>
 	    <a><a>1</a><b>2</b></a>
 	    <b><a>3</a><b>4</b></b>
@@ -14,7 +14,7 @@
 	    <c>6</c>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="cascadeExtends">
 	  <repo>
 	    <a extends="b"><a>1</a><b>2</b></a>
 	    <b><x>0</x><b>1</b></b>
@@ -30,7 +30,7 @@
 	    <c>6</c>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="multiExtends">
 	  <repo>
 	    <a><a>1</a><b>2</b></a>
 	    <b><a>3</a><b>4</b></b>
@@ -44,7 +44,7 @@
 	    <b><a>3</a><b>5</b></b>
 	  </success>
 	</Test>
-	<Test>
+	<Test name="hierarchyExtends">
 	  <repo>
 	    <a><a>1</a><b>2</b></a>
 	    <b><a>3</a><b>4</b></b>

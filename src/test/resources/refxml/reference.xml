@@ -1,5 +1,5 @@
 <Tests>
-  <Test>
+  <Test name="refToSiblingPrimitive">
     <test>
       <a>1</a>
       <b ref="a"/>
@@ -9,7 +9,7 @@
       <b>1</b>
     </success>
   </Test>
-  <Test>
+  <Test name="refToSiblingObject">
     <test>
       <a><c>1</c><d>2</d></a>
       <b ref="a"/>
@@ -19,7 +19,7 @@
       <b><c>1</c><d>2</d></b>
     </success>
   </Test>
-  <Test>
+  <Test name="refToParentsSibling">
     <test>
       <a>1</a>
       <b><c ref="a"/></b>
@@ -29,7 +29,7 @@
       <b><c>1</c></b>
     </success>
   </Test>
-  <Test>
+  <Test name="refToTheSameName">
     <test>
       <a>1</a>
       <b><a ref="a"/></b>
@@ -39,7 +39,7 @@
       <b><a>1</a></b>
     </success>
   </Test>
-  <Test>
+  <Test name="doNotComeBackToItself">
     <test>
       <b><a>1</a></b>
       <c><b><a ref="b/a"/></b></c>
@@ -49,7 +49,7 @@
       <c><b><a>1</a></b></c>
     </success>
   </Test>
-  <Test>
+  <Test name="multiRef">
     <test>
       <a><d>1</d><e>2</e></a>
       <b><c ref="a/d"/></b>
@@ -61,7 +61,7 @@
       <c><c>2</c></c>
     </success>
   </Test>
-  <Test>
+  <Test name="goAncestorsUntilPathCompletes">
     <test>
       <a><b>1</b><c>3</c></a>
       <c><a><c>2</c></a><d ref="a/b"/><e ref="a/c"/></c>

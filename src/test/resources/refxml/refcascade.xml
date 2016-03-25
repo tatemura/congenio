@@ -1,5 +1,5 @@
 <Tests>
-  <Test>
+  <Test name="simpleCascade">
     <test>
       <a ref="c"/>
       <b ref="a"/>
@@ -11,7 +11,7 @@
       <c>1</c>
     </success>
   </Test>
-  <Test>
+  <Test name="cascadeInDescendants">
     <test>
       <a><c ref="c"/><d>2</d></a>
       <b ref="a"/>
@@ -25,7 +25,21 @@
       <d>1</d>
     </success>
   </Test>
-  <Test>
+  <Test name="cascadeEvalOrder">
+    <comment>c@ref is evaluated at the original
+    place (c) not at b</comment>
+    <test>
+      <a><c ref="d"/><d>2</d></a>
+      <b ref="a/c"/>
+      <d>1</d>
+    </test>
+    <success>
+      <a><c>2</c><d>2</d></a>
+      <b>2</b>
+      <d>1</d>
+    </success>
+  </Test>
+  <Test name="zigzagCascade">
     <test>
       <a ref="b/d"/>
       <b><c ref="a"/><d>1</d></b>
@@ -35,7 +49,7 @@
       <b><c>1</c><d>1</d></b>
     </success>
   </Test>
-  <Test>
+  <Test name="referenceIntoCascade">
     <test>
       <a ref="c"/>
       <b ref="a/d"/>
@@ -47,7 +61,7 @@
       <c><d>1</d></c>
     </success>
   </Test>
-  <Test>
+  <Test name="referenceIntoCascadeOutOfOrder">
     <test>
       <b ref="a/d"/>
       <a ref="c"/>
