@@ -87,7 +87,8 @@ public final class ConfigProperties {
     }
 
     public static Map<String, String> getLibDefs() {
-        return getLibDefs(new File("."));
+        return getLibDefs(new File(new File(".").getAbsolutePath())
+                .getParentFile());
     }
 
     private static Properties libDefProperties(File dir) {
@@ -147,6 +148,7 @@ public final class ConfigProperties {
     }
 
     private static final String HOME = "~/";
+    private static final String PARENT = "../";
 
     /**
      * Converts a path to a file.
@@ -167,6 +169,37 @@ public final class ConfigProperties {
             String home = System.getProperty("user.home");
             return new File(home + "/" + path.substring(HOME.length()))
                     .getAbsolutePath();
+        } else if (path.startsWith(PARENT) && safeToResolve(baseDir)) {
+            File absBase = new File(baseDir.getAbsolutePath());
+            return resolveParents(absBase, path);
+        }
+        return new File(baseDir, path).getAbsolutePath();
+    }
+
+    private static boolean safeToResolve(File baseDir) {
+        File dir = baseDir;
+        while (dir != null) {
+            /*
+             * NOTE a path that contains '..'
+             * is not supported.
+             */
+            if ("..".equals(dir.getName())) {
+                return false;
+            }
+            dir = dir.getParentFile();
+        }
+        return true;
+    }
+
+    static String resolveParents(File baseDir, String path) {
+        if (path.startsWith(PARENT)) {
+            File parent = baseDir.getParentFile();
+            if (parent != null) {
+                if (".".equals(baseDir.getName())) {
+                    return resolveParents(parent, path);
+                }
+                return resolveParents(parent, path.substring(PARENT.length()));
+            }
         }
         return new File(baseDir, path).getAbsolutePath();
     }

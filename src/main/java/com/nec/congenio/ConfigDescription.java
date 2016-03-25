@@ -112,15 +112,4 @@ public abstract class ConfigDescription {
     @Nullable
     public abstract String get(String name);
 
-//<<<<<<< Updated upstream
-//=======
-//
-//    private static Properties congenProperties() {
-//        return ConfigProperties.getProperties();
-//    }
-//
-//    private static Properties congenProperties(File file) {
-//        return ConfigProperties.getProperties(file.getParentFile());
-//    }
-//>>>>>>> Stashed changes
 }

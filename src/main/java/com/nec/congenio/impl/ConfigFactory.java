@@ -71,14 +71,28 @@ public class ConfigFactory {
 
     private XmlConfigDescription create(ConfigResource resource) {
         Element elem = resource.createElement();
-        ExtendXml.resolve(elem, resource);
+        try {
+            ExtendXml.resolve(elem, resource);
+        } catch (ConfigEvalException ex) {
+            /*
+             * TODO refactor: show detailed errors at the top level
+             * (i.e., at ConfigCli).
+             */
+            ex.printDiag(System.err);
+            throw ex;
+        }
         return new XmlConfigDescription(elem);
     }
 
     private XmlConfigDescription create(ConfigResource resource,
             XmlConfigDescription base) {
         Element elem = resource.createElement();
-        ExtendXml.resolve(elem, base.getRoot(), resource);
+        try {
+            ExtendXml.resolve(elem, base.getRoot(), resource);
+        } catch (ConfigEvalException ex) {
+            ex.printDiag(System.err);
+            throw ex;
+        }
         return new XmlConfigDescription(elem);
     }
 

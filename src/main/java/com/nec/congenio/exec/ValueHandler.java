@@ -20,9 +20,28 @@ import com.nec.congenio.ConfigDescription;
 import com.nec.congenio.ConfigValue;
 
 public interface ValueHandler {
+
+    /**
+     * Inspects the config description (before
+     * unfolding) for initialization.
+     * @param cdl the config description to be handled
+     * @throws Exception thrown for any issue that
+     *         needs the handling to stop.
+     */
     void init(ConfigDescription cdl) throws Exception;
 
+    /**
+     * Handles one of the resolved (unfolded) documents.
+     * @param idx the index of the document.
+     * @param value the value of the document.
+     * @throws Exception thrown for any issue that
+     *         needs the handling to stop.
+     */
     void value(int idx, ConfigValue value) throws Exception;
 
+    /**
+     * Finishes the value handling.
+     * @throws Exception for any issue.
+     */
     void close() throws Exception;
 }

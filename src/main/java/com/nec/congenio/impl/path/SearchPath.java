@@ -148,13 +148,12 @@ public abstract class SearchPath implements ResourceFinder {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append("file:[");
+            sb.append("file:");
             if (parent != null) {
                 sb.append(parent.getAbsolutePath());
             } else {
                 sb.append('.');
             }
-            sb.append("]");
             return sb.toString();
         }
 

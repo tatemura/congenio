@@ -47,6 +47,13 @@ public class ExtendXml {
                 EvalContext.create(res));
     }
 
+    /**
+     * Resolves inheritance (extension) of a given subtree of the document
+     * with a base document.
+     * @param elem the root of the subtree (which will be updated)
+     * @param base the root of the base
+     * @param res resource.
+     */
     public static void resolve(Element elem, Element base, ConfigResource res) {
         new ExtendXml().resolveMixin(elem, base,
                 EvalContext.create(res));
@@ -79,14 +86,14 @@ public class ExtendXml {
             /**
              * NOTE this extends="." will remain in the output. (1) If this is
              * called by inheritance, it will be used and removed. (2)
-             * Otherwise, it will kept in the final output of inheritance
+             * Otherwise, it will be kept in the final output of inheritance
              * resolution. Later, reference resolution may use it.
              */
             return true;
         }
-        Element base = getPrototype(ctxt.of(extPath.getPath()));
+        Element base = getPrototype(ctxt.of(extPath.getPath(), elem));
         for (String m : extPath.getMixins()) {
-            base = getMixin(base, ctxt.of(m));
+            base = getMixin(base, ctxt.of(m, elem));
         }
         ExtendPath.remove(elem);
         inheritElement(elem, base, ctxt);
@@ -99,9 +106,9 @@ public class ExtendXml {
             inheritElement(elem, base, ctxt);
         } else {
             Element proto = getMixin(base,
-                    ctxt.of(extPath.getPath()));
+                    ctxt.of(extPath.getPath(), elem));
             for (String m : extPath.getMixins()) {
-                proto = getMixin(proto, ctxt.of(m));
+                proto = getMixin(proto, ctxt.of(m, elem));
             }
             ExtendPath.remove(elem);
             inheritElement(elem, proto, ctxt);

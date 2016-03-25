@@ -23,6 +23,7 @@ import java.net.URL;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import com.nec.congenio.ConfigValue;
 import com.nec.congenio.ValueFormat;
@@ -65,4 +66,32 @@ public class XmlValueFormat implements ValueFormat {
         }
     }
 
+    /**
+     * Generates a path expression that refers to
+     * the given element.
+     * @param elem the element for which a path is
+     *        generated.
+     * @return a path from the root to the given element.
+     */
+    public static String path(Element elem) {
+        String path = "/" + name(elem);
+        Node currentNode = elem;
+        while ((currentNode = currentNode.getParentNode()) != null) {
+            if (currentNode instanceof Element) {
+                path = "/" + name((Element) currentNode) + path;
+            } else {
+                break;
+            }
+        }
+        return path;
+    }
+
+    private static String name(Element elem) {
+        String name = elem.getAttribute("name");
+        if (!name.isEmpty()) {
+            return elem.getTagName() + "[" + name + "]";
+        } else {
+            return elem.getTagName();
+        }
+    }
 }

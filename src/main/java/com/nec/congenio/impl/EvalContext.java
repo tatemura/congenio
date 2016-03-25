@@ -20,8 +20,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import com.nec.congenio.ConfigException;
 import com.nec.congenio.impl.path.ResourceFinder;
+import com.nec.congenio.value.xml.XmlValueFormat;
 import com.nec.congenio.impl.path.PathExpression;
 
 /**
@@ -34,7 +37,7 @@ public class EvalContext {
     private final ResourceFinder finder;
     private PathExpression currentPath;
     private ConfigResource currentResource;
-    private final List<ConfigResource> resourceStack;
+    private final List<StackElement> resourceStack;
 
     public static EvalContext create(ConfigResource resource) {
         return new EvalContext(resource);
@@ -48,9 +51,8 @@ public class EvalContext {
      */
     public EvalContext(ConfigResource resource) {
         this.finder = resource.getFinder();
-        this.resourceStack = new ArrayList<ConfigResource>();
+        this.resourceStack = new ArrayList<StackElement>();
         this.currentResource = resource;
-        this.resourceStack.add(resource);
     }
 
     /**
@@ -68,25 +70,25 @@ public class EvalContext {
             }
 
         };
-        this.resourceStack = new ArrayList<ConfigResource>();
+        this.resourceStack = new ArrayList<StackElement>();
     }
 
     protected EvalContext(PathExpression path,
-            ConfigResource resource, List<ConfigResource> resourceStack) {
+            ConfigResource resource, List<StackElement> resourceStack) {
         this.finder = resource.getFinder();
         this.currentPath = path;
-        this.resourceStack = new ArrayList<ConfigResource>();
+        this.resourceStack = resourceStack;
         this.currentResource = resource;
-        this.resourceStack.add(resource);
-        this.resourceStack.addAll(resourceStack);
     }
 
-    private PathExpression parse(String pathExpr) {
+    private PathExpression parse(String pathExpr, Element at) {
         try {
             return PathExpression.parse(pathExpr);
         } catch (ConfigException ex) {
             printResourceTrace();
-            throw ex;
+            throw new ConfigEvalException(
+                    "failed to parse path: " + pathExpr
+                    + " at " + XmlValueFormat.path(at), this, ex);
         }
 
     }
@@ -97,18 +99,27 @@ public class EvalContext {
      * expression that is found in the current context.
      * @param pathExpr the path expression that refers to
      *        another document.
+     * @param at the element there the path is placed.
      * @return the evaluate context to evaluate
      *         the referred document.
      */
-    public EvalContext of(String pathExpr) {
-        PathExpression expr = parse(pathExpr);
+    public EvalContext of(String pathExpr, Element at) {
+        PathExpression expr = parse(pathExpr, at);
         try {
             ConfigResource resource = finder.getResource(expr, this);
-            return new EvalContext(expr, resource, resourceStack);
+            return new EvalContext(expr, resource, newStack(at));
         } catch (ConfigException ex) {
-            printResourceTrace();
-            throw ex;
+            String msg = "failed to find resource: " + pathExpr
+                    + " at " + XmlValueFormat.path(at);
+            throw  new ConfigEvalException(msg, this, ex);
         }
+    }
+
+    private List<StackElement> newStack(Element elem) {
+        List<StackElement> stack = new ArrayList<StackElement>();
+        stack.add(new StackElement(currentResource, elem));
+        stack.addAll(resourceStack);
+        return stack;
     }
 
     public ConfigResource getCurrentResource() {
@@ -126,8 +137,11 @@ public class EvalContext {
      *        is printed out.
      */
     public void printResourceTrace(PrintStream out) {
-        for (ConfigResource r : resourceStack) {
-            out.println(r.getUri());
+        out.print("    at ");
+        out.println(currentResource.getUri());
+        for (StackElement s : resourceStack) {
+            out.print("    at ");
+            out.println(s.toString());
         }
     }
 
@@ -145,5 +159,32 @@ public class EvalContext {
             return "";
         }
         return currentPath.getDocPath();
+    }
+
+    public static class StackElement {
+        private final ConfigResource resource;
+        private final Element element;
+
+        public StackElement(ConfigResource resource, Element element) {
+            this.resource = resource;
+            this.element = element;
+        }
+
+        public Element getElement() {
+            return element;
+        }
+
+        public ConfigResource getResource() {
+            return resource;
+        }
+
+        @Override
+        public String toString() {
+            return resource.getUri()
+                    + "#"
+                    + XmlValueFormat.path(element)
+                    // replace '/' with '#'
+                    .substring(1);
+        }
     }
 }
