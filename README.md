@@ -1,36 +1,26 @@
 Congenio: Configuration Generation Language
 ========================================================
 
-
 The Congenio Configuration Generation Language is a tool
-to maintain and generate configuration values (primarily) for experiments.
-
- * inheritance (@extends attribute): combining and modifying component
- documents.
- * document unfolding (foreach element): generating multiple configuration
- documents (each of which is used for one experiment setting).
- * reference resolution (@ref attribute)
- * value expression (@exp attribute)
+to maintain and generate configuration values (primarily) for experiments
+in a reproducible manner.
 
 See [User's guide](https://github.com/tatemura/congenio/wiki/UsersGuide) for details.
 
-** NOTE: this is a preview version (0.0.X) ** The current implementation
-is just enough for our specific purposes. We will add some more missing
-pieces (with potentially incompatible changes) as well as documentation.
-We target Version 0.1.0 for stable versions.
 
 Motivation
 -----
-Configuration management utility, such as Puppet, enables us
+A configuration management utility tool, such as Puppet, enables us
 to deploy and configure a complex system (that consists of multiple
 components such as DBMS and application servers) automatically. Once
 we describe configuration, we can repeat the same deployment many times.
-But what if we need to repeat with many different combination of configurations?
+
+But what if we need to repeat it with many different combinations of configuration?
 
 In our case, we needed to conduct experiments on the performance of
 complex systems (performance evaluation, tuning, capacity planning,...), which
 involve a large number of configuration options to explore. Writing scripts
-was one approach, which tend to bury important parameters into the script code,
+was one approach, which tends to bury important parameters into the script code,
 quickly making experiments no longer manageable and repeatable.
 
 The configuration generation language was developed to bring manageability
@@ -39,14 +29,19 @@ and reproducibility to such experiments with complex systems.
 
 Usage
 -----
-It can be used either a stand alone command or a library embedded to
+It can be used either as a stand-alone command or as a library embedded in
 other programs.
 
 ### Command-line (use in a script)
 
 A command line tool "congen" converts a config document into a
-set of resolved documents (in either XML or JSON format). A script can use
-this tool to generate and use resolved documents as input of experiments.
+set of resolved documents (in either XML or JSON format).
+
+    % congen --outdir config --format json experiment-001.xml
+    % less config/out/*.json
+
+A custom script (e.g., shell or python) can use
+this tool to generate and use resolved documents as experiment parameters.
 (See [wiki](https://github.com/tatemura/congenio/wiki/CommandLineInterface)
 on the command line interface.)
 
@@ -60,11 +55,22 @@ our experiment platform [Strudel](https://github.com/tatemura/strudel)
 
 ### Executor (run as a script)
 
-[TODO] We plan to add additional language features to describe a simple executor
-that invokes external scripts (e.g. Puppet) with generated parameters.
+[TODO] In a future release (v0.2.X), we plan to add
+features to run a simple executor
+that invokes external scripts (e.g. shell or Python scripts, Puppet)
+with generated parameters.
 
 Language Features
 -----------------
+The followings are the main features of the language:
+
+ * inheritance (@extends attribute): combining and modifying component
+ documents.
+ * document unfolding (foreach element): generating multiple configuration
+ documents (each of which is used for one experiment setting).
+ * reference resolution (@ref attribute)
+ * value expression (@exp attribute)
+
 With @extends attribute, an experiment document can refer to existing templates
 (that define various components such as benchmarks and database configuration
 parameters) and customize the default values of these templates. With foreach
@@ -72,6 +78,7 @@ elements, an experiment document can generate a set of documents, each of
 which corresponds to one execution run with a specific set of parameters.
 Attributes @ref and @exp are useful to generate component parameters that
 are related to each other.
+
 
 See [wiki](https://github.com/tatemura/congenio/wiki/LanguageFeatures) for details.
 
@@ -90,7 +97,7 @@ Suppose you have a file jpa-mysql.xml:
 	    </property>
 	  </params>
 	</database>
-Another document can refer to this document with an "extend"
+Another document can refer to this document with an "extends"
 attribute to generate a modified version of the original document.
 For example, the following XML will extend the jpa-mysql.xml with a new
 name:
@@ -123,10 +130,14 @@ extend values that are not direct children:
 	       </property>
 	    </params>
 	</database>
+
+See [ExtendsAttribute](https://github.com/tatemura/congenio/wiki/ExtendsAttribute)
+wiki page for more information.
+
 ### Reference (@ref)
 A reference ("ref" attribute) is provided to refer to a value
 (subtree) within the same document. It is useful to describe
-configuration that comprise of multiple components that share
+configuration that comprises of multiple components that share
 the same values.
 
 The following example is a configuration of an experiment that
@@ -159,18 +170,25 @@ database URL, a document can extend only one element:
        <dbUrl>jdbc:mysql://myserver.example.com:3306</dbUrl>
     </experiment>
 
+See [RefAttribute](https://github.com/tatemura/congenio/wiki/RefAttribute)
+wiki page for more information.
+
 ### Value expression (@exp)
-A reference let components share the exactly same values. But sometimes,
-a components need a slightly different value. For example, we just want
-to share the host name of the server used by multiple components.
+Although a reference enables reuse of the same value in different
+components, it does not work when a component needs a slightly
+different value. For example, one component
+may need a JDBC URL (e.g, "jdbc:mysql://localhost:3306")
+while another component needs another URL of some service
+on the same host (e.g., "http://localhost:8080/myservice").
+We just want
+to share the host name of the server used by these components:
 
     <experiment>
         <host>localhost</host>
         ...
     </experiment>
 
-But each component may need a special string derived from a host
-name. For example, by using a value expression (concat), an URL of
+By using a value expression (concat), an URL of
 JDBC can be generated from a reference:
 
 	<property name="javax.persistence.jdbc.url"
@@ -179,6 +197,9 @@ JDBC can be generated from a reference:
 	   <h ref="host"/>
 	   <h>:3306</h>
 	</property>
+
+See [ExpAttribute](https://github.com/tatemura/congenio/wiki/ExpAttribute)
+wiki page for more information.
 
 ### Document unfolding (foreach)
 A foreach element is used
@@ -202,6 +223,9 @@ of which is as follows:
       <scale><clients>10</clients><users>100000</users></scale>
       <servers>5</servers>
     </benchmarkParam>
+
+See [ForeachElement](https://github.com/tatemura/congenio/wiki/ForeachElement)
+wiki page for more information.
 
 Installation
 ------------
