@@ -75,6 +75,9 @@ public final class ConfigProperties {
      * @return a map from name to path.
      */
     public static Map<String, String> getLibDefs(File dir) {
+        if (dir == null) {
+            return getLibDefs();
+        }
         Properties props = libDefProperties(dir);
         if (!props.isEmpty()) {
             return toAbsolutes(props, dir);
