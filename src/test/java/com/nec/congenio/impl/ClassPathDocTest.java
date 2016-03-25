@@ -18,8 +18,6 @@ package com.nec.congenio.impl;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-
 import org.junit.Test;
 
 import com.nec.congenio.ConfigValue;
@@ -46,12 +44,4 @@ public class ClassPathDocTest {
         assertEquals(2, val.getInt("b"));
     }
 
-    @Test
-    public void test1() {
-        File file = new File(".");
-        File abs = new File(file.getAbsolutePath()).getParentFile();
-        System.err.println(new File(file, "test").getAbsolutePath());
-        System.err.println(new File(abs, "test").getAbsolutePath());
-        System.err.println(abs.getParent());
-    }
 }
